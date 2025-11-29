@@ -48,6 +48,8 @@ Este proyecto está bajo la licencia indicada en el archivo `LICENSE`.
 
 Daniel Ferrochio — GitHub: `danielferrochio`
 
+Esta aplicación ha sido desarrollada con la ayuda de **Google Gemini**.
+
 ## Demo / Página pública
 
 La aplicación está publicada usando GitHub Pages y se puede ver en:
