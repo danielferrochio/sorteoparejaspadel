@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteo de Parejas de Pádel</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuración de color para Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'court-blue': '#0060A0', // Color principal (pasto/malla azul)
+                        'accent-yellow': '#FFD700', // Color de acento (pelota amarilla/líneas)
+                        'court-light': '#E3F2FD', // Fondo muy claro (cielo/alrededores)
+                        'drive-color': '#2196F3', // Azul para Drive (usado en íconos/texto de resultados)
+                        'reves-color': '#FF9800', // Naranja para Revés (usado en íconos/texto de resultados)
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F0F8FF; /* Fondo muy claro */
+        }
+        /* Estilo para el efecto de sorteo/barajado */
+        @keyframes shuffle {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            50% { transform: translateY(-10px) rotate(5deg); opacity: 0.8; }
+        }
+        .shuffling .result-card {
+            animation: shuffle 0.2s ease-in-out infinite alternate;
+        }
+
+        .result-card {
+            transition: all 0.5s ease-in-out;
+            min-height: 100px; /* Asegura espacio para la animación */
+        }
+
+        /* Estilos de Confeti */
+        .confetti {
+            position: absolute;
+            width: 8px;
+            height: 12px;
+            opacity: 0;
+            animation: fall 3s ease-in forwards;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .animate-bounce-fast {
+            animation: bounce 0.5s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Contenedor para el confeti (se llena dinámicamente) -->
+    <div id="confetti-container" class="fixed inset-0 pointer-events-none z-[100]"></div>
+
+    <div class="max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-xl shadow-2xl border-t-8 border-court-blue">
+        <h1 class="text-3xl md:text-4xl font-bold text-center text-court-blue mb-2 flex items-center justify-center">
+            Sorteo de Parejas de Padel
+        </h1>
+        <p class="text-center text-gray-500 mb-8">Organiza tus partidos de forma justa y divertida.</p>
+
+        <!-- Cantidad de Parejas -->
+        <div class="mb-8 p-4 bg-court-light rounded-lg shadow-inner">
+            <h2 class="text-xl font-semibold text-court-blue mb-3 flex items-center">
+                <!-- EMOJI: Ábaco -->
+                <span class="text-2xl mr-2">🧮</span>
+                Cantidad de Parejas
+            </h2>
+            <label for="numParejas" class="block text-sm font-medium text-gray-700 mb-2">
+                Número de Parejas a Armar (múltiplos de 2, máx. 16):
+            </label>
+            <select id="numParejas" onchange="updatePlayerCounts()"
+                    class="w-full p-2 border border-court-blue rounded-lg focus:ring-accent-yellow focus:border-accent-yellow transition duration-150 appearance-none bg-white">
+                <option value="2">2 Parejas (4 jugadores)</option>
+                <option value="4">4 Parejas (8 jugadores)</option>
+                <option value="6">6 Parejas (12 jugadores)</option>
+                <option value="8">8 Parejas (16 jugadores)</option>
+                <option value="10">10 Parejas (20 jugadores)</option>
+                <option value="12">12 Parejas (24 jugadores)</option>
+                <option value="14">14 Parejas (28 jugadores)</option>
+                <option value="16">16 Parejas (32 jugadores)</option>
+            </select>
+            <p id="playerReqs" class="mt-2 text-sm text-gray-600">
+                Se necesitan 2 jugadores de Drive y 2 jugadores de Revés.
+            </p>
+        </div>
+
+        <!-- Ingreso de Jugadores -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Jugadores de Revés -->
+            <div class="p-4 bg-court-light rounded-lg shadow-inner"> <!-- Fondo y sombra aplicados -->
+                <!-- Título sin número -->
+                <h2 class="text-xl font-semibold text-court-blue mb-3 flex items-center"
+                    title="Escribe un nombre de jugador de revés por cada línea.">
+                    <!-- EMOJI: Bomba -->
+                    <span class="text-2xl mr-2">💣</span>
+                    Jugadores de Revés
+                </h2>
+                <!-- Textarea con estilo unificado -->
+                <textarea id="jugadoresReves" rows="6"
+                          placeholder="Escribe aquí un nombre por línea..."
+                          title="Escribe un nombre de jugador de revés por cada línea."
+                          class="w-full p-3 border-2 border-court-blue rounded-lg focus:ring-accent-yellow focus:border-accent-yellow transition duration-150 shadow-md"></textarea>
+                <span id="countReves" class="text-sm text-gray-500">0 jugadores</span>
+            </div>
+
+            <!-- Jugadores de Drive -->
+            <div class="p-4 bg-court-light rounded-lg shadow-inner"> <!-- Fondo y sombra aplicados -->
+                <!-- Título sin número -->
+                <h2 class="text-xl font-semibold text-court-blue mb-3 flex items-center"
+                    title="Escribe un nombre de jugador de drive por cada línea.">
+                    <!-- EMOJI: Arco con Flecha -->
+                    <span class="text-2xl mr-2">🏹</span>
+                    Jugadores de Drive
+                </h2>
+                <!-- Textarea con estilo unificado -->
+                <textarea id="jugadoresDrive" rows="6"
+                          placeholder="Escribe aquí un nombre por línea..."
+                          title="Escribe un nombre de jugador de drive por cada línea."
+                          class="w-full p-3 border-2 border-court-blue rounded-lg focus:ring-accent-yellow focus:border-accent-yellow transition duration-150 shadow-md"></textarea>
+                <span id="countDrive" class="text-sm text-gray-500">0 jugadores</span>
+            </div>
+        </div>
+
+        <!-- Botón de Sortear -->
+        <div class="text-center mb-8">
+            <button id="sortearBtn" onclick="iniciarSorteo()" disabled
+                    class="bg-court-blue hover:bg-accent-yellow text-white hover:text-court-blue font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center mx-auto">
+                <svg id="sortearIcon" class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path></svg>
+                <span id="sortearText">¡Sortear Parejas!</span>
+            </button>
+            <div id="errorMsg" class="mt-4 text-red-600 font-semibold hidden"></div>
+        </div>
+    </div>
+
+    <!-- Modal Structure (NEW) -->
+    <div id="sorteoModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-xl transform transition-all duration-300">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h2 id="modalTitle" class="text-2xl font-bold text-court-blue">Sorteando...</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-800 transition">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="modalContent" class="py-4">
+                <!-- Animation / Results will go here -->
+            </div>
+            <div id="modalFooter" class="pt-4 border-t mt-4 text-center">
+                <button onclick="closeModal()" class="bg-court-blue hover:bg-accent-yellow text-white hover:text-court-blue font-bold py-2 px-6 rounded-full transition duration-300">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Elementos de la página principal
+        const numParejasInput = document.getElementById('numParejas');
+        const jugadoresRevesTextarea = document.getElementById('jugadoresReves');
+        const jugadoresDriveTextarea = document.getElementById('jugadoresDrive');
+        const playerReqs = document.getElementById('playerReqs');
+        const countReves = document.getElementById('countReves');
+        const countDrive = document.getElementById('countDrive');
+        const sortearBtn = document.getElementById('sortearBtn');
+        const errorMsg = document.getElementById('errorMsg');
+        const confettiContainer = document.getElementById('confetti-container');
+
+        // Elementos del Modal (NUEVOS)
+        const sorteoModal = document.getElementById('sorteoModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+
+        // Escuchar cambios en los textareas y el select para actualizar el conteo
+        jugadoresRevesTextarea.addEventListener('input', updatePlayerCounts);
+        jugadoresDriveTextarea.addEventListener('input', updatePlayerCounts);
+        numParejasInput.addEventListener('change', updatePlayerCounts); // Asegurar que el cambio en select también actualice
+
+        /**
+         * Muestra el modal con un título específico.
+         * Se encarga de aplicar las clases base del modal, pero runSorteoAnimation
+         * se encargará del layout específico de la animación.
+         * @param {string} title - Título a mostrar en el modal.
+         */
+        function openModal(title) {
+            modalTitle.textContent = title;
+            // Usamos flex para centrar el modal y lo mostramos
+            sorteoModal.classList.remove('hidden');
+            sorteoModal.classList.add('flex');
+            // Limpiar confeti anterior
+            confettiContainer.innerHTML = '';
+        }
+
+        /**
+         * Oculta el modal y limpia su contenido.
+         */
+        function closeModal() {
+            sorteoModal.classList.remove('flex');
+            sorteoModal.classList.add('hidden');
+            modalContent.innerHTML = ''; // Limpiar contenido al cerrar
+            modalContent.classList.remove('shuffling'); // Asegurar que la animación se detiene si estaba activa
+            // Limpiar clases de layout específicas de la animación (asegurando que se eliminen todas las posibles clases de layout)
+            modalContent.classList.remove('flex', 'flex-col', 'items-center', 'justify-center', 'h-96', 'w-full', 'min-h-[300px]');
+            modalContent.classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'gap-4'); // Limpiar grid si se quedó
+            confettiContainer.innerHTML = ''; // Limpiar confeti al cerrar
+        }
+
+        /**
+         * Actualiza el texto de requerimiento de jugadores y el conteo actual,
+         * y habilita/deshabilita el botón de sortear basado en la coincidencia EXACTA.
+         */
+        function updatePlayerCounts() {
+            const numParejas = parseInt(numParejasInput.value) || 2;
+            const required = numParejas;
+            playerReqs.textContent = `Se necesitan ${required} jugadores de Drive y ${required} jugadores de Revés.`;
+
+            // Obtener listas de jugadores, eliminando líneas vacías
+            const revesList = jugadoresRevesTextarea.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+            const driveList = jugadoresDriveTextarea.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+
+            const revesCount = revesList.length;
+            const driveCount = driveList.length;
+
+            const revesOk = revesCount === required;
+            const driveOk = driveCount === required;
+
+            // --- LÓGICA PARA MOSTRAR LA CANTIDAD FALTANTE/SOBRANTE ---
+            const getStatusMessage = (count, required) => {
+                const diff = count - required;
+                if (diff === 0) return 'Cantidad exacta';
+                if (diff > 0) return `Sobran ${diff}`;
+                return `Faltan ${Math.abs(diff)}`;
+            };
+
+            const revesStatusMessage = getStatusMessage(revesCount, required);
+            const driveStatusMessage = getStatusMessage(driveCount, required);
+
+            // 1. Actualizar el conteo visual
+            countReves.textContent = `${revesCount} jugadores (${revesStatusMessage})`;
+            countDrive.textContent = `${driveCount} jugadores (${driveStatusMessage})`;
+
+            // 2. Resaltar si la cantidad no es EXACTA
+            countReves.className = `text-sm ${revesOk ? 'text-green-600' : 'text-red-500 font-semibold'}`;
+            countDrive.className = `text-sm ${driveOk ? 'text-green-600' : 'text-red-500 font-semibold'}`;
+
+            // 3. Deshabilitar/Habilitar botón basado en la validación EXACTA
+            const allOk = revesOk && driveOk;
+            sortearBtn.disabled = !allOk;
+
+            // 4. Limpiar el mensaje de error de la interfaz principal si la validación pasa
+            if (allOk) {
+                errorMsg.classList.add('hidden');
+                errorMsg.textContent = '';
+            }
+        }
+
+        /**
+         * Función auxiliar para mezclar un array (Algoritmo Fisher-Yates).
+         * @param {Array} array - El array a mezclar.
+         * @returns {Array} - El array mezclado.
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        /**
+         * Ejecuta la animación combinada de cuenta regresiva y sorteo (barajado)
+         * mostrando la cuenta regresiva arriba.
+         */
+        async function runSorteoAnimation() {
+            const ANIMATION_DURATION = 3000; // 3 segundos para el sorteo completo
+            const numParejas = parseInt(numParejasInput.value) || 2;
+
+            // Deshabilitar botón y cambiar texto
+            sortearBtn.disabled = true;
+            document.getElementById('sortearText').textContent = 'Sorteando...';
+            document.getElementById('sortearIcon').classList.add('animate-spin');
+
+            // 1. Configuración inicial del modal para el efecto combinado (ahora vertical)
+            modalContent.classList.add('flex', 'flex-col', 'items-center', 'w-full', 'min-h-[300px]');
+            modalContent.innerHTML = `
+                <!-- Contenedor de Cuenta Regresiva (Arriba) -->
+                <!-- Agregamos 'mt-6' para separar visualmente el contador del borde superior de modalContent. -->
+                <div id="countdownDisplay" class="mb-6 p-4 rounded-xl bg-court-light shadow-inner text-center mt-6">
+                    <span id="countdownNumber" class="text-6xl md:text-8xl font-black text-court-blue animate-bounce-fast">3</span>
+                    <p class="text-lg md:text-xl text-gray-600 mt-2">¡Sorteando parejas!</p>
+                </div>
+                <!-- Contenedor de Barajado (Abajo) -->
+                <div id="shufflingCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4 shuffling w-full max-w-lg">
+                </div>
+            `;
+
+            const countdownNumber = document.getElementById('countdownNumber');
+            const shufflingCardsContainer = document.getElementById('shufflingCardsContainer');
+
+            // 2. Lógica del Contador (3, 2, 1, ¡Ya!)
+            let count = 3;
+
+            const countdownInterval = setInterval(() => {
+                count--;
+                if (count >= 1) {
+                    countdownNumber.textContent = count;
+                    // Reiniciar animación de rebote
+                    countdownNumber.classList.remove('animate-bounce-fast');
+                    void countdownNumber.offsetWidth;
+                    countdownNumber.classList.add('animate-bounce-fast');
+                } else if (count === 0) {
+                    countdownNumber.textContent = '¡Ya!';
+                    countdownNumber.classList.remove('animate-bounce-fast');
+                } else {
+                    clearInterval(countdownInterval);
+                }
+            }, 1000); // 1 segundo por número (3, 2, 1)
+
+            // 3. Lógica de Barajado (Visual Shuffling) - Se ejecuta por 3 segundos
+            let animationStartTime = Date.now();
+            const shuffleInterval = 100; // Intervalo de actualización rápido
+
+            // Inicia la animación de barajado inmediatamente
+            shufflingCardsContainer.classList.add('shuffling');
+
+            const shuffling = setInterval(() => {
+                if (Date.now() - animationStartTime >= ANIMATION_DURATION) {
+                    clearInterval(shuffling);
+                    return;
+                }
+
+                // Generar listas para visual de barajado
+                let revesList = jugadoresRevesTextarea.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+                let driveList = jugadoresDriveTextarea.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+
+                if (revesList.length >= numParejas && driveList.length >= numParejas) {
+                    revesList = shuffleArray(revesList.slice(0, numParejas));
+                    driveList = shuffleArray(driveList.slice(0, numParejas));
+
+                    let tempHTML = '';
+                    for (let i = 0; i < numParejas; i++) {
+                        const reves = revesList[i] || 'Revés?';
+                        const drive = driveList[i] || 'Drive?';
+                        tempHTML += createResultCard(`Pareja ${i + 1}`, reves, drive);
+                    }
+                    shufflingCardsContainer.innerHTML = tempHTML;
+                }
+            }, shuffleInterval);
+
+            // 4. Esperar la duración total y resolver
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    clearInterval(countdownInterval);
+                    clearInterval(shuffling);
+
+                    // Cleanup UI (la animación es eliminada al resolver)
+                    modalContent.innerHTML = '';
+                    // Limpieza actualizada con las clases que se añadieron
+                    modalContent.classList.remove('flex', 'flex-col', 'items-center', 'w-full', 'min-h-[300px]');
+
+                    // Restaurar estado del botón
+                    document.getElementById('sortearIcon').classList.remove('animate-spin');
+                    sortearBtn.disabled = false;
+                    document.getElementById('sortearText').textContent = '¡Sortear Parejas!';
+
+                    resolve();
+                }, ANIMATION_DURATION);
+            });
+        }
+
+        /**
+         * Genera y anima partículas de confeti.
+         */
+        function showConfetti() {
+            // Nota: El sonido de celebración ha sido eliminado de aquí.
+
+            const colors = ['#FFD700', '#FF9800', '#0060A0', '#E3F2FD', '#BFFF00', '#FF0000'];
+            const numConfetti = 50;
+
+            for (let i = 0; i < numConfetti; i++) {
+                const c = document.createElement('div');
+                c.className = 'confetti';
+                c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                c.style.left = `${Math.random() * 100}vw`;
+                c.style.width = `${Math.random() * 5 + 3}px`;
+                c.style.height = `${Math.random() * 8 + 4}px`;
+                c.style.animationDuration = `${Math.random() * 1.5 + 2}s`;
+                c.style.animationDelay = `${Math.random() * 0.5}s`;
+                confettiContainer.appendChild(c);
+            }
+
+            // Limpiar confeti después de que termine la animación
+            setTimeout(() => {
+                confettiContainer.innerHTML = '';
+            }, 3000);
+        }
+
+        /**
+         * Crea el HTML para una tarjeta de pareja.
+         * @param {string} title - Título de la pareja (e.g., Pareja 1).
+         * @param {string} reves - Nombre del jugador de revés.
+         * @param {string} drive - Nombre del jugador de drive.
+         * @returns {string} - HTML de la tarjeta.
+         */
+        function createResultCard(title, reves, drive) {
+            return `
+                <div class="result-card bg-court-light p-4 rounded-xl shadow-lg border-l-4 border-accent-yellow flex flex-col justify-center">
+                    <h3 class="text-lg font-bold text-court-blue mb-2">${title}</h3>
+                    <div class="flex items-center text-gray-800 font-semibold text-base mb-1">
+                        <!-- EMOJI de Revés (Bomba) -->
+                        <span class="text-xl mr-2">💣</span>
+                        ${reves}
+                        <span class="text-reves-color font-normal text-sm ml-1">(Revés)</span>
+                    </div>
+                    <div class="flex items-center text-gray-800 font-semibold text-base">
+                        <!-- EMOJI de Drive (Arco con Flecha) -->
+                        <span class="text-xl mr-2">🏹</span>
+                        ${drive}
+                        <span class="text-drive-color font-normal text-sm ml-1">(Drive)</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Realiza el sorteo final de las parejas.
+         */
+        async function iniciarSorteo() {
+            // 1. Validaciones
+            const numParejas = parseInt(numParejasInput.value) || 0;
+            const required = numParejas;
+
+            let revesList = jugadoresRevesTextarea.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+            let driveList = jugadoresDriveTextarea.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+
+            errorMsg.classList.add('hidden');
+            errorMsg.textContent = '';
+
+            // Validación defensiva (el botón ya debería estar deshabilitado si no hay coincidencia exacta)
+            if (revesList.length !== required || driveList.length !== required) {
+                errorMsg.textContent = `Error: Debes tener EXACTAMENTE ${required} jugadores de Revés y ${required} de Drive.`;
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            // 2. Ejecutar la animación y abrir modal
+            openModal('Sorteando Parejas...');
+
+            await runSorteoAnimation(); // Ahora maneja la cuenta regresiva y el shuffling
+
+            // 3. Preparar las listas finales
+            revesList = shuffleArray(revesList.slice(0, required));
+            driveList = shuffleArray(driveList.slice(0, required));
+
+            // 4. Configurar el layout para los resultados finales y mostrarlos
+            modalContent.classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'gap-4');
+
+            let finalHTML = '';
+            for (let i = 0; i < numParejas; i++) {
+                finalHTML += createResultCard(`Pareja ${i + 1}`, revesList[i], driveList[i]);
+            }
+
+            modalContent.innerHTML = finalHTML; // Overwrites the animation structure
+            modalTitle.textContent = '¡Parejas Sorteadas!'; // Cambiar título del modal
+
+            // 5. Mostrar confeti
+            showConfetti();
+        }
+
+        // Inicialización al cargar la página
+        window.onload = () => {
+            // ¡ELIMINADOS LOS VALORES DE EJEMPLO para dejar los campos limpios!
+            // jugadoresRevesTextarea.value = "Juan\nPedro\nMariano\nLuis";
+            // jugadoresDriveTextarea.value = "María\nSofía\nAna\nCarla";
+
+            // Se mantiene la llamada para establecer el estado inicial (botón deshabilitado y conteos en 0).
+            updatePlayerCounts();
+        };
+
+    </script>
+</body>
+</html>
