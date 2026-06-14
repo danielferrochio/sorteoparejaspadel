@@ -346,3 +346,399 @@ document.addEventListener("DOMContentLoaded", () => {
       validate();
     });
     segWrap.appendChild(b);
+  });
+
+  /* ---- textarea logic ---- */
+  const LH = 22;   // px — debe coincidir con --ta-lh
+  const PT = 10;   // px — debe coincidir con --ta-pt
+
+  function getLines(side){
+    const ta = $("ta" + (side === "reves" ? "Reves" : "Drive"));
+    // NO aplicar norm aquí para no perder líneas vacías intermedias
+    return ta.value.split("\n");
+  }
+
+  function getNormed(side){
+    return getLines(side).map(norm);
+  }
+
+  function syncHeight(ta){
+    ta.style.height = "0";
+    ta.style.height = Math.max(ta.scrollHeight, LH + PT * 2) + "px";
+  }
+
+  function renderNums(side){
+    const numsEl = $(side === "reves" ? "numsReves" : "numsDrive");
+    const taWrap = document.querySelector(`.ta-wrap[data-side="${side}"]`);
+    const lines = getNormed(side);   // normalizado para lógica
+    const req = state.pairs;
+
+    // detectar dupes solo entre líneas con contenido
+    const seen = {}, dupIdx = new Set();
+    lines.forEach((v,i) => {
+      if (!v) return;
+      const k = v.toLowerCase();
+      if (seen[k] != null){ dupIdx.add(i); dupIdx.add(seen[k]); } else seen[k] = i;
+    });
+
+    // renderizar exactamente req números
+    numsEl.innerHTML = "";
+    for (let i = 0; i < req; i++){
+      const span = document.createElement("span");
+      span.className = "ta-num";
+      span.textContent = String(i+1).padStart(2,"0");
+      const val = lines[i];
+      if (dupIdx.has(i)) span.classList.add("dupe");
+      else if (val) span.classList.add("filled");
+      else span.classList.add("empty");
+      numsEl.appendChild(span);
+    }
+    taWrap.classList.toggle("has-dupe", dupIdx.size > 0);
+    return dupIdx;
+  }
+
+  function initTabs(){
+    const btnReves = $("tabBtnReves"), btnDrive = $("tabBtnDrive");
+    const panelReves = $("tabReves"), panelDrive = $("tabDrive");
+    function switchTab(active){
+      const isReves = active === "reves";
+      btnReves.classList.toggle("is-active", isReves);
+      btnDrive.classList.toggle("is-active", !isReves);
+      btnReves.setAttribute("aria-selected", isReves ? "true":"false");
+      btnDrive.setAttribute("aria-selected", isReves ? "false":"true");
+      panelReves.classList.toggle("is-hidden", !isReves);
+      panelDrive.classList.toggle("is-hidden", isReves);
+      // foco al textarea de la pestaña activa
+      setTimeout(() => $(isReves ? "taReves" : "taDrive").focus(), 50);
+    }
+    btnReves.addEventListener("click", () => switchTab("reves"));
+    btnDrive.addEventListener("click", () => switchTab("drive"));
+  }
+
+  function initTextareas(){
+    ["reves","drive"].forEach(side => {
+      const ta = $("ta" + (side === "reves" ? "Reves" : "Drive"));
+      ta.addEventListener("input", () => { syncHeight(ta); validate(); });
+      ta.addEventListener("keydown", (e) => {
+        if (e.key === "Enter"){
+          // bloquear Enter si ya hay suficientes jugadores
+          const filled = getNormed(side).filter(Boolean).length;
+          if (filled >= state.pairs){ e.preventDefault(); }
+        }
+      });
+      ta.addEventListener("paste", (e) => {
+        // dejar que el browser pegue, luego limpiar líneas extra
+        setTimeout(() => { syncHeight(ta); validate(); }, 0);
+      });
+    });
+  }
+
+  /* ---- validation ---- */
+  function validate(){
+    reqN.textContent = reqN2.textContent = state.pairs;
+    ["reves","drive"].forEach(side => {
+      const lines = getNormed(side);
+      const filled = lines.slice(0, state.pairs).filter(Boolean).length;
+      const dupIdx = renderNums(side);
+      sideMeta[side] = { filled, dup: dupIdx.size > 0 };
+      const el = side === "reves" ? countReves : countDrive;
+      const ok = filled === state.pairs && dupIdx.size === 0;
+      el.textContent = `${filled}/${state.pairs}`;
+      el.className = "tab-count " + (dupIdx.size ? "is-bad" : ok ? "is-ok" : "");
+    });
+    const ready = sideMeta.reves.filled === state.pairs && !sideMeta.reves.dup
+               && sideMeta.drive.filled === state.pairs && !sideMeta.drive.dup;
+    sortearBtn.disabled = !ready;
+    if (ready) errMsg.textContent = "";
+  }
+
+  /* ---- sorteo ---- */
+  sortearBtn.addEventListener("click", iniciarSorteo);
+
+  async function iniciarSorteo(){
+    const req = state.pairs;
+    const reves = getNormed("reves").filter(Boolean).slice(0, req);
+    const drive = getNormed("drive").filter(Boolean).slice(0, req);
+    if (reves.length < req || drive.length < req || sideMeta.reves.dup || sideMeta.drive.dup){
+      errMsg.textContent = `Completá los ${req} nombres de cada lado, sin repetidos.`;
+      return;
+    }
+    errMsg.textContent = "";
+    openOverlay("Sorteando…");
+    sortearBtn.disabled = true; ctaText.textContent = "Sorteando…"; ctaBall.parentElement.classList.add("spin");
+
+    if (!REDUCED) await runAnimation();
+
+    const r = shuffle(reves.slice()), d = shuffle(drive.slice());
+    lastResult = r.map((x,i) => ({ no:i+1, reves:x, drive:d[i] }));
+
+    renderResults(lastResult);
+    boardTitle.textContent = "Parejas sorteadas";
+    if (!REDUCED) confetti();
+
+    ctaBall.parentElement.classList.remove("spin");
+    ctaText.textContent = "Sortear parejas"; sortearBtn.disabled = false;
+  }
+
+  function runAnimation(){
+    boardBody.innerHTML =
+      `<div class="countdown"><div class="num" id="cd">3</div>
+       <div class="lbl">Armando parejas</div><div class="net"></div></div>`;
+    const cd = $("cd");
+    let n = 3;
+    const tick = setInterval(() => {
+      n--;
+      if (n >= 1){ cd.textContent = n; cd.style.animation="none"; void cd.offsetWidth; cd.style.animation=""; }
+      else { cd.textContent = "¡Ya!"; clearInterval(tick); }
+    }, 850);
+    return new Promise(res => setTimeout(res, 2700));
+  }
+
+  function renderResults(pairs){
+    const testFile = new File([""], "test.png", { type:"image/png" });
+    const canShareImg = !!(navigator.canShare && navigator.canShare({ files:[testFile] }));
+
+    boardBody.innerHTML = `<div class="pairs">
+      ${pairs.map((p,i) => `
+      <article class="pair" style="animation-delay:${i*40}ms">
+        <span class="pair__no">${String(p.no).padStart(2,"0")}</span>
+        <span class="pair__line">
+          <span class="pair__rv">${esc(p.reves)}</span><span class="pair__sep">/</span><span class="pair__dr">${esc(p.drive)}</span>
+        </span>
+      </article>`).join("")}
+    </div>
+      <div class="actions">
+        <button class="btn" id="copyBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke-linecap="round"/></svg>
+          Copiar
+        </button>
+        ${canShareImg
+          ? `<button class="btn btn--share" id="shareBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke-linecap="round"/></svg>
+              Compartir imagen
+             </button>`
+          : `<button class="btn" id="pngBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round"/></svg>
+              Descargar PNG
+             </button>`}
+        <button class="btn btn--primary" id="reBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h5M20 20v-5h-5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 14a7 7 0 0 0 12 3M19 10A7 7 0 0 0 7 7" stroke-linecap="round"/></svg>
+          Volver a sortear
+        </button>
+      </div>`;
+    $("copyBtn").addEventListener("click", copyResults);
+    if (canShareImg) $("shareBtn").addEventListener("click", shareImage);
+    else $("pngBtn").addEventListener("click", exportPNG);
+    $("reBtn").addEventListener("click", () => { closeOverlay(); setTimeout(iniciarSorteo, 120); });
+  }
+
+  /* ---- copy ---- */
+  function copyResults(){
+    if (!lastResult) return;
+    const lines = ["Sorteo de parejas de pádel", ""];
+    lastResult.forEach(p => lines.push(`Pareja ${p.no}:  ${p.reves} (revés)  ×  ${p.drive} (drive)`));
+    navigator.clipboard?.writeText(lines.join("\n"))
+      .then(() => showToast("Copiado al portapapeles"))
+      .catch(() => showToast("No se pudo copiar"));
+  }
+
+  /* ---- canvas compartido ---- */
+  function buildCanvas(){
+    const S = 2, W = 1080, pad = 60, rowH = 70, headH = 210, footH = 80;
+    const H = headH + lastResult.length * rowH + footH;
+    const cv = document.createElement("canvas");
+    cv.width = W*S; cv.height = H*S;
+    const c = cv.getContext("2d"); c.scale(S,S);
+
+    const col = {
+      bg1:"#1A52A8", bg2:"#0D2454",
+      muted:"rgba(255,255,255,0.50)", text:"#FFFFFF",
+      ball:"#C8E600", reves:"#22C55E", drive:"#F0A500",
+      rowOdd:"rgba(255,255,255,0.04)", rowEven:"rgba(255,255,255,0.09)",
+      divider:"rgba(255,255,255,0.12)", border:"rgba(255,255,255,0.28)"
+    };
+
+    // fondo — gradiente igual que la web
+    const bg = c.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0, col.bg1); bg.addColorStop(1, col.bg2);
+    c.fillStyle = bg; c.fillRect(0,0,W,H);
+    // destello superior sutil
+    const glow = c.createRadialGradient(W/2,0,0,W/2,0,W*0.75);
+    glow.addColorStop(0,"rgba(255,255,255,0.07)"); glow.addColorStop(1,"rgba(255,255,255,0)");
+    c.fillStyle = glow; c.fillRect(0,0,W,H);
+
+    // borde exterior (como la web)
+    const rr = 20;
+    c.strokeStyle = "rgba(255,255,255,0.70)"; c.lineWidth = 3;
+    c.beginPath();
+    if (c.roundRect) c.roundRect(4,4,W-8,H-8,rr);
+    else c.rect(4,4,W-8,H-8);
+    c.stroke();
+
+    // header
+    c.textBaseline = "alphabetic";
+    c.fillStyle = col.text; c.font = "600 18px 'Chakra Petch', monospace";
+    c.fillText("● PÁDEL", pad, 72);
+    c.fillStyle = col.text; c.font = "700 52px 'Chakra Petch', sans-serif";
+    c.fillText("Sorteo de parejas", pad, 136);
+    const d = new Date();
+    c.fillStyle = col.muted; c.font = "400 20px 'Sora', sans-serif";
+    c.fillText(d.toLocaleDateString("es-AR",{day:"2-digit",month:"long",year:"numeric"}), pad, 170);
+
+    // línea divisoria bajo header
+    c.strokeStyle = col.divider; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(pad, headH-10); c.lineTo(W-pad, headH-10); c.stroke();
+
+    // filas
+    const noW = 70, textX = pad + noW + 16;
+    const maxTxt = W - textX - pad - 20;
+
+    const measureAndClip = (txt, max, font) => {
+      c.font = font;
+      if (c.measureText(txt).width <= max) return txt;
+      while (txt.length > 1 && c.measureText(txt + "…").width > max) txt = txt.slice(0,-1);
+      return txt + "…";
+    };
+
+    // clip redondeado para que los fondos de fila no se salgan del borde
+    const tr2 = 12;
+    c.save();
+    c.beginPath();
+    if (c.roundRect) c.roundRect(pad, headH, W - pad*2, lastResult.length * rowH, tr2);
+    else c.rect(pad, headH, W - pad*2, lastResult.length * rowH);
+    c.clip();
+
+    lastResult.forEach((p, idx) => {
+      const ry = headH + idx * rowH;
+
+      // fondo alternado — full width dentro del borde
+      c.fillStyle = idx % 2 === 0 ? col.rowOdd : col.rowEven;
+      c.fillRect(pad, ry, W - pad*2, rowH);
+
+      // borde inferior
+      if (idx < lastResult.length - 1){
+        c.strokeStyle = col.divider; c.lineWidth = 1;
+        c.beginPath(); c.moveTo(pad, ry+rowH); c.lineTo(W-pad, ry+rowH); c.stroke();
+      }
+
+      const cy = ry + rowH/2 + 9; // baseline centrada verticalmente
+
+      // número
+      c.textAlign = "left"; c.fillStyle = col.muted;
+      c.font = "700 22px 'Chakra Petch', monospace";
+      c.fillText(String(p.no).padStart(2,"0"), pad+12, cy);
+
+      // medir el texto completo para hacer clip inteligente
+      const sepTxt = " / ";
+      const nameFont = "600 26px 'Sora', sans-serif";
+      const sepFont  = "400 26px 'Sora', sans-serif";
+
+      c.font = nameFont;
+      const rvFull = p.reves;
+      c.font = sepFont;
+      const sepW = c.measureText(sepTxt).width;
+      c.font = nameFont;
+      const drFull = p.drive;
+
+      // cada nombre tiene hasta la mitad del espacio disponible menos el sep
+      const halfMax = (maxTxt - sepW) / 2;
+      const rvText = measureAndClip(rvFull, halfMax, nameFont);
+      const drText = measureAndClip(drFull, halfMax, nameFont);
+
+      // dibujar Revés
+      c.font = nameFont; c.fillStyle = col.reves; c.textAlign = "left";
+      c.fillText(rvText, textX, cy);
+      const rvW = c.measureText(rvText).width;
+
+      // separador
+      c.font = sepFont; c.fillStyle = "rgba(255,255,255,0.35)";
+      c.fillText(sepTxt, textX + rvW, cy);
+
+      // Drive
+      c.font = nameFont; c.fillStyle = col.drive;
+      c.fillText(drText, textX + rvW + sepW, cy);
+    });
+
+    c.restore(); // fin del clip redondeado
+
+    // borde exterior de la tabla de filas con esquinas redondeadas
+    const tr = 12;
+    c.strokeStyle = col.border; c.lineWidth = 1.5;
+    c.beginPath();
+    if (c.roundRect) c.roundRect(pad, headH, W - pad*2, lastResult.length * rowH, tr);
+    else c.rect(pad, headH, W - pad*2, lastResult.length * rowH);
+    c.stroke();
+    // enmascarar esquinas de las filas con clip redondeado
+    // (ya pintadas antes del stroke, el borde las cubre limpiamente)
+
+    // footer
+    c.textAlign = "left"; c.fillStyle = col.muted;
+    c.font = "400 16px 'Chakra Petch', monospace";
+    c.fillText("Sorteo de parejas de pádel", pad, H - 30);
+
+    return { cv, date: d };
+  }
+
+  /* ---- export PNG ---- */
+  function exportPNG(){
+    if (!lastResult) return;
+    const { cv, date } = buildCanvas();
+    const a = document.createElement("a");
+    a.href = cv.toDataURL("image/png");
+    a.download = `parejas-padel-${date.toISOString().slice(0,10)}.png`;
+    a.click();
+    showToast("Imagen descargada");
+  }
+
+  /* ---- share image (Web Share API) ---- */
+  async function shareImage(){
+    if (!lastResult) return;
+    const { cv, date } = buildCanvas();
+    cv.toBlob(async (blob) => {
+      const file = new File([blob], `parejas-padel-${date.toISOString().slice(0,10)}.png`, { type:"image/png" });
+      try {
+        await navigator.share({ files:[file], title:"Sorteo de parejas de pádel" });
+      } catch (e) {
+        if (e.name !== "AbortError") showToast("No se pudo compartir");
+      }
+    }, "image/png");
+  }
+
+  /* ---- confetti ---- */
+  function confetti(){
+    const colors = ["#C8E600","#22C55E","#F0A500","#FFFFFF","#A8C4EE"];
+    const frag = document.createDocumentFragment();
+    for (let i=0;i<60;i++){
+      const el = document.createElement("div");
+      el.className = "confetti";
+      el.style.background = colors[(Math.random()*colors.length)|0];
+      el.style.left = Math.random()*100 + "vw";
+      el.style.width = (Math.random()*5+4) + "px";
+      el.style.height = (Math.random()*8+5) + "px";
+      el.style.animationDuration = (Math.random()*1.4+2) + "s";
+      el.style.animationDelay = (Math.random()*0.4) + "s";
+      frag.appendChild(el);
+    }
+    confettiBox.innerHTML = ""; confettiBox.appendChild(frag);
+    setTimeout(() => confettiBox.innerHTML = "", 3400);
+  }
+
+  /* ---- overlay ---- */
+  function openOverlay(title){ boardTitle.textContent = title; overlay.classList.add("open"); document.body.style.overflow="hidden"; }
+  function closeOverlay(){ overlay.classList.remove("open"); document.body.style.overflow=""; boardBody.innerHTML=""; confettiBox.innerHTML=""; }
+  closeBtn.addEventListener("click", closeOverlay);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) closeOverlay(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && overlay.classList.contains("open")) closeOverlay(); });
+
+  let toastT;
+  function showToast(msg){ toast.textContent = msg; toast.classList.add("show");
+    clearTimeout(toastT); toastT = setTimeout(() => toast.classList.remove("show"), 1900); }
+
+  /* ---- init ---- */
+  initTabs();
+  initTextareas();
+  validate();
+});
+</script>
+</body>
+</html>
