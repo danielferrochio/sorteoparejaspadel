@@ -41,8 +41,8 @@
   .eyebrow{display:inline-flex; align-items:center; gap:9px;
     font-family:'Chakra Petch',monospace; font-weight:600; font-size:12px;
     letter-spacing:.32em; text-transform:uppercase; color:var(--court);
-    padding:6px 12px; border:1px solid color-mix(in srgb, var(--court) 35%, transparent);
-    border-radius:999px; background:color-mix(in srgb, var(--court) 9%, transparent);
+    padding:6px 12px; border:1px solid rgba(255,255,255,0.35);
+    border-radius:999px; background:rgba(255,255,255,0.09);
   }
   .eyebrow .ball{width:9px; height:9px; border-radius:50%; background:var(--ball);
     box-shadow:0 0 10px var(--ball), 0 0 2px #fff inset}
@@ -74,7 +74,7 @@
   .seg small{display:block; font-family:'Sora',sans-serif; font-weight:500; font-size:10px;
     letter-spacing:.04em; color:var(--muted); margin-top:5px; text-transform:none}
   .seg:hover{background:rgba(255,255,255,.12); transform:translateY(-1px)}
-  .seg[aria-pressed="true"]{border-color:var(--court); background:color-mix(in srgb,var(--court) 14%,var(--surface2));
+  .seg[aria-pressed="true"]{border-color:var(--court); background:rgba(255,255,255,0.14);
     box-shadow:0 0 0 1px var(--court), 0 0 22px -6px var(--court)}
   .seg[aria-pressed="true"] small{color:var(--court)}
   .req{margin:14px 0 0; font-size:13px; color:var(--muted)}
@@ -114,7 +114,7 @@
     transition:border-color .15s, box-shadow .15s}
   .side--reves .ta-wrap:focus-within{border-color:var(--reves); box-shadow:0 0 0 1px var(--reves)}
   .side--drive .ta-wrap:focus-within{border-color:var(--drive); box-shadow:0 0 0 1px var(--drive)}
-  .ta-wrap.has-dupe{border-color:var(--danger); box-shadow:0 0 0 1px color-mix(in srgb,var(--danger) 60%,transparent)}
+  .ta-wrap.has-dupe{border-color:var(--danger); box-shadow:0 0 0 1px rgba(255,107,107,0.60)}
   .ta-nums{display:flex; flex-direction:column;
     padding-top:var(--ta-pt); padding-bottom:var(--ta-pt);
     background:rgba(0,0,0,0.18); border-right:1px solid rgba(255,255,255,0.12);
@@ -313,7 +313,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-(() => {
+document.addEventListener("DOMContentLoaded", () => {
   "use strict";
   const OPTIONS = [2,4,6,8,10,12,14,16];
   const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -342,4 +342,7 @@
     b.innerHTML = `${n}<small>${n*2} jug.</small>`;
     b.addEventListener("click", () => {
       state.pairs = n;
-      [...segWrap.children].forEach(c => c.setAttribute("aria-pressed", c.dataset.n == n ? "true":"f
+      [...segWrap.children].forEach(c => c.setAttribute("aria-pressed", c.dataset.n == n ? "true":"false"));
+      validate();
+    });
+    segWrap.appendChild(b);
