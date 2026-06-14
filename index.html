@@ -1,499 +1,345 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorteo de Parejas de Pádel</title>
-    <!-- Carga de Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Configuración de color para Tailwind -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'court-blue': '#0060A0', // Color principal (pasto/malla azul)
-                        'accent-yellow': '#FFD700', // Color de acento (pelota amarilla/líneas)
-                        'court-light': '#E3F2FD', // Fondo muy claro (cielo/alrededores)
-                        'drive-color': '#2196F3', // Azul para Drive (usado en íconos/texto de resultados)
-                        'reves-color': '#FF9800', // Naranja para Revés (usado en íconos/texto de resultados)
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #F0F8FF; /* Fondo muy claro */
-        }
-        /* Estilo para el efecto de sorteo/barajado */
-        @keyframes shuffle {
-            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            50% { transform: translateY(-10px) rotate(5deg); opacity: 0.8; }
-        }
-        .shuffling .result-card {
-            animation: shuffle 0.2s ease-in-out infinite alternate;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sorteo de Parejas de Pádel</title>
+<meta name="description" content="Sorteá las parejas de tu partido de pádel. Drive y revés, equilibrado y al azar." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0D2454; --bg2:#0F3880; --surface:#1A52A8; --surface2:#1348A0;
+    --line:rgba(255,255,255,0.20); --line2:rgba(255,255,255,0.12);
+    --court:#FFFFFF; --ball:#C8E600; --drive:#F0A500; --reves:#22C55E;
+    --text:#FFFFFF; --muted:rgba(255,255,255,0.60); --danger:#FF6B6B; --ok:#86EFAC;
+    --r:14px; --r-lg:22px;
+    --maxw:920px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; min-height:100vh; color:var(--text); line-height:1.55;
+    font-family:'Sora',system-ui,-apple-system,sans-serif;
+    background:
+      radial-gradient(900px 400px at 50% -80px, rgba(255,255,255,.08), transparent 60%),
+      linear-gradient(180deg, #1A52A8 0%, #0D2454 100%);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--ball); color:#0a0a0a}
+  a{color:var(--court)}
 
-        .result-card {
-            transition: all 0.5s ease-in-out;
-            min-height: 100px; /* Asegura espacio para la animación */
-        }
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:clamp(20px,4vw,48px) clamp(16px,4vw,28px) 72px}
 
-        /* Estilos de Confeti */
-        .confetti {
-            position: absolute;
-            width: 8px;
-            height: 12px;
-            opacity: 0;
-            animation: fall 3s ease-in forwards;
-        }
+  /* ---------- Hero ---------- */
+  .hero{position:relative; margin-bottom:24px; overflow:hidden;
+    border:2px solid rgba(255,255,255,0.70); border-radius:var(--r-lg);
+    background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+    padding:clamp(26px,5vw,44px) clamp(22px,4vw,40px) clamp(30px,5vw,46px);
+  }
+  .eyebrow{display:inline-flex; align-items:center; gap:9px;
+    font-family:'Chakra Petch',monospace; font-weight:600; font-size:12px;
+    letter-spacing:.32em; text-transform:uppercase; color:var(--court);
+    padding:6px 12px; border:1px solid color-mix(in srgb, var(--court) 35%, transparent);
+    border-radius:999px; background:color-mix(in srgb, var(--court) 9%, transparent);
+  }
+  .eyebrow .ball{width:9px; height:9px; border-radius:50%; background:var(--ball);
+    box-shadow:0 0 10px var(--ball), 0 0 2px #fff inset}
+  .hero h1{margin:18px 0 0; font-family:'Chakra Petch',sans-serif; font-weight:700;
+    font-size:clamp(34px,7vw,62px); line-height:.96; letter-spacing:-.01em;
+    text-transform:uppercase;
+  }
+  .hero h1 .glow{color:var(--ball); text-shadow:0 0 28px rgba(200,230,0,.45)}
+  .hero p{margin:14px 0 0; max-width:46ch; color:var(--muted); font-size:clamp(14px,2.4vw,16px)}
 
-        @keyframes fall {
-            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
+  /* ---------- Panels ---------- */
+  .panel{border:2px solid rgba(255,255,255,0.70); border-radius:var(--r-lg); background:rgba(255,255,255,0.07);
+    padding:clamp(18px,3.4vw,26px); margin-bottom:24px}
+  .panel__head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:16px}
+  .panel__title{display:inline-flex; align-items:center; gap:9px;
+    font-family:'Chakra Petch',monospace; font-weight:600; font-size:12px;
+    letter-spacing:.32em; text-transform:uppercase; color:rgba(255,255,255,0.85);
+    padding:6px 14px; border:1px solid rgba(255,255,255,0.45);
+    border-radius:999px; background:rgba(255,255,255,0.10)}
+  .panel__title .dot{width:7px; height:7px; border-radius:50%; background:var(--ball);
+    box-shadow:0 0 8px var(--ball); flex-shrink:0}
 
-        .animate-bounce-fast {
-            animation: bounce 0.5s infinite alternate;
-        }
+  /* ---------- Count selector ---------- */
+  .segmented{display:flex; flex-wrap:wrap; gap:8px}
+  .seg{appearance:none; cursor:pointer; min-width:54px; padding:11px 8px;
+    border:1px solid rgba(255,255,255,0.18); border-radius:12px; background:rgba(255,255,255,0.08);
+    color:var(--text); font-family:'Chakra Petch',monospace; font-weight:600; font-size:18px;
+    line-height:1; transition:border-color .15s, background .15s, transform .08s, box-shadow .15s}
+  .seg small{display:block; font-family:'Sora',sans-serif; font-weight:500; font-size:10px;
+    letter-spacing:.04em; color:var(--muted); margin-top:5px; text-transform:none}
+  .seg:hover{background:rgba(255,255,255,.12); transform:translateY(-1px)}
+  .seg[aria-pressed="true"]{border-color:var(--court); background:color-mix(in srgb,var(--court) 14%,var(--surface2));
+    box-shadow:0 0 0 1px var(--court), 0 0 22px -6px var(--court)}
+  .seg[aria-pressed="true"] small{color:var(--court)}
+  .req{margin:14px 0 0; font-size:13px; color:var(--muted)}
+  .req b{color:var(--text); font-weight:600}
 
-        @keyframes bounce {
-            from { transform: translateY(0); }
-            to { transform: translateY(-10px); }
-        }
-    </style>
+  /* ---------- Tabs de jugadores ---------- */
+  .tabs-nav{display:flex; border-bottom:1px solid rgba(255,255,255,0.15); margin-bottom:18px}
+  .tab-btn{flex:1; display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:11px 8px; background:transparent; border:0; border-bottom:2px solid transparent;
+    margin-bottom:-1px; cursor:pointer; font-family:'Chakra Petch',sans-serif; font-weight:700;
+    font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,0.40);
+    transition:color .15s, border-color .15s, background .15s}
+  .tab-btn .pip{width:8px; height:8px; border-radius:50%; flex-shrink:0; opacity:.5; transition:opacity .15s}
+  .tab-btn--reves .pip{background:var(--reves); box-shadow:0 0 8px var(--reves)}
+  .tab-btn--drive .pip{background:var(--drive); box-shadow:0 0 8px var(--drive)}
+  .tab-btn--reves.is-active{color:var(--reves); border-bottom-color:var(--reves); background:rgba(34,197,94,0.06)}
+  .tab-btn--drive.is-active{color:var(--drive); border-bottom-color:var(--drive); background:rgba(240,165,0,0.06)}
+  .tab-btn.is-active .pip{opacity:1}
+  .tab-count{font-family:'Chakra Petch',monospace; font-size:11px; font-weight:700;
+    padding:3px 8px; border-radius:999px; white-space:nowrap; transition:color .15s, border-color .15s, background .15s}
+  .tab-btn--reves .tab-count{color:rgba(34,197,94,0.6); background:rgba(34,197,94,0.10); border:1px solid rgba(34,197,94,0.20)}
+  .tab-btn--drive .tab-count{color:rgba(240,165,0,0.6); background:rgba(240,165,0,0.10); border:1px solid rgba(240,165,0,0.20)}
+  .tab-btn--reves.is-active .tab-count{color:var(--reves); background:rgba(34,197,94,0.15); border-color:rgba(34,197,94,0.40)}
+  .tab-btn--drive.is-active .tab-count{color:var(--drive); background:rgba(240,165,0,0.15); border-color:rgba(240,165,0,0.40)}
+  .tab-count.is-ok{color:var(--ok) !important; background:rgba(134,239,172,0.12) !important; border-color:rgba(134,239,172,0.35) !important}
+  .tab-count.is-bad{color:var(--danger) !important; background:rgba(255,107,107,0.10) !important; border-color:rgba(255,107,107,0.30) !important}
+  .side{position:relative}
+  .side--reves{--c:var(--reves)}
+  .side--drive{--c:var(--drive)}
+  .side.is-hidden{display:none}
+
+  /* ---- textarea con numeración lateral ---- */
+  /* line-height fijo en px para que JS pueda calcular altura y alinear números */
+  :root{ --ta-lh:22px; --ta-pt:10px; --ta-fs:14px }
+  .ta-wrap{display:flex; border-radius:11px; overflow:hidden;
+    background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.22);
+    transition:border-color .15s, box-shadow .15s}
+  .side--reves .ta-wrap:focus-within{border-color:var(--reves); box-shadow:0 0 0 1px var(--reves)}
+  .side--drive .ta-wrap:focus-within{border-color:var(--drive); box-shadow:0 0 0 1px var(--drive)}
+  .ta-wrap.has-dupe{border-color:var(--danger); box-shadow:0 0 0 1px color-mix(in srgb,var(--danger) 60%,transparent)}
+  .ta-nums{display:flex; flex-direction:column;
+    padding-top:var(--ta-pt); padding-bottom:var(--ta-pt);
+    background:rgba(0,0,0,0.18); border-right:1px solid rgba(255,255,255,0.12);
+    min-width:36px; user-select:none; pointer-events:none; flex-shrink:0}
+  .ta-num{font-family:'Chakra Petch',monospace; font-weight:600; font-size:11px;
+    text-align:center; height:var(--ta-lh); line-height:var(--ta-lh); padding:0 6px; display:block}
+  .side--reves .ta-num.filled{color:var(--reves)}
+  .side--drive .ta-num.filled{color:var(--drive)}
+  .ta-num.empty{color:rgba(255,255,255,0.22)}
+  .ta-num.dupe{color:var(--danger)}
+  .ta-field{flex:1; padding:var(--ta-pt) 12px; background:transparent; border:0; outline:0;
+    color:var(--text); font-family:inherit; font-size:var(--ta-fs); line-height:var(--ta-lh);
+    resize:none; overflow:hidden; min-height:calc(var(--ta-lh) + var(--ta-pt)*2)}
+  .ta-field:focus{outline:0}
+  .ta-field:focus-visible{outline:0}
+  .ta-field::placeholder{color:rgba(255,255,255,0.30)}
+  .hint{margin:9px 2px 0; font-size:11px; color:rgba(255,255,255,0.40)}
+
+  /* ---------- CTA ---------- */
+  .cta-row{margin-top:22px; text-align:center}
+  .cta{position:relative; display:inline-flex; align-items:center; gap:13px;
+    font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:18px; letter-spacing:.06em;
+    text-transform:uppercase; color:#0a1206; cursor:pointer;
+    padding:16px 34px; border:0; border-radius:999px;
+    background:linear-gradient(180deg,#d8f000,var(--ball));
+    box-shadow:0 0 0 1px rgba(200,230,0,.6), 0 14px 40px -12px var(--ball), 0 0 60px -18px var(--ball);
+    transition:transform .12s, box-shadow .2s, filter .2s}
+  .cta:hover:not(:disabled){transform:translateY(-2px) scale(1.015);
+    box-shadow:0 0 0 1px rgba(200,230,0,.8), 0 20px 52px -12px var(--ball), 0 0 80px -14px var(--ball)}
+  .cta:active:not(:disabled){transform:translateY(0) scale(.99)}
+  .cta:disabled{cursor:not-allowed; filter:grayscale(.7) brightness(.6); box-shadow:0 0 0 1px var(--line2)}
+  .cta .ball{width:18px; height:18px; border-radius:50%; background:#0a1206; position:relative}
+  .cta .ball::after{content:""; position:absolute; inset:3px 7px auto 3px; height:2px; border-radius:2px;
+    background:var(--ball); transform:rotate(28deg)}
+  .err{margin:14px 0 0; color:var(--danger); font-size:13.5px; font-weight:500; min-height:18px}
+
+  /* ---------- Overlay / results ---------- */
+  .overlay{position:fixed; inset:0; z-index:60; display:none; place-items:center;
+    padding:18px; background:rgba(4,7,14,.82); backdrop-filter:blur(7px)}
+  .overlay.open{display:grid}
+  .board{width:100%; max-width:640px; max-height:92vh; overflow:auto;
+    border:1px solid var(--line2); border-radius:var(--r-lg);
+    background:linear-gradient(180deg,#1A52A8,#0D2454); box-shadow:0 40px 120px -30px #000;
+    animation:rise .35s cubic-bezier(.2,.7,.3,1)}
+  .board__head{position:sticky; top:0; z-index:2; display:flex; align-items:center;
+    justify-content:space-between; gap:12px; padding:18px 20px;
+    border-bottom:1px solid rgba(255,255,255,0.18); background:linear-gradient(180deg,#1A52A8,rgba(26,82,168,.6))}
+  .board__title{font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:17px;
+    letter-spacing:.04em; text-transform:uppercase}
+  .iconbtn{appearance:none; cursor:pointer; width:34px; height:34px; border-radius:10px;
+    border:1px solid rgba(255,255,255,0.22); background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.6);
+    display:grid; place-items:center; transition:color .15s, border-color .15s, background .15s}
+  .iconbtn:hover{color:#fff; background:rgba(255,255,255,0.15)}
+  .board__body{padding:18px 20px}
+
+  .countdown{display:grid; place-items:center; min-height:300px; gap:10px; text-align:center}
+  .countdown .num{font-family:'Chakra Petch',monospace; font-weight:700;
+    font-size:clamp(78px,22vw,128px); line-height:1; color:var(--ball);
+    text-shadow:0 0 40px rgba(200,230,0,.5); animation:thump .9s ease}
+  .countdown .lbl{font-family:'Chakra Petch',sans-serif; letter-spacing:.22em; text-transform:uppercase;
+    font-size:13px; color:var(--muted)}
+  .countdown .net{width:min(380px,80%); height:1px; margin-top:6px;
+    background:repeating-linear-gradient(90deg,var(--court) 0 6px,transparent 6px 12px); opacity:.5}
+
+  /* ---- lista de parejas sorteadas ---- */
+  .pairs{display:grid; gap:0; border:1px solid rgba(255,255,255,0.25); border-radius:var(--r); overflow:hidden}
+  .pair{display:flex; align-items:center; gap:12px;
+    padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.10);
+    background:rgba(255,255,255,0.04); animation:rise .35s ease backwards}
+  .pair:last-child{border-bottom:0}
+  .pair:nth-child(odd){background:rgba(255,255,255,0.07)}
+  .pair__no{font-family:'Chakra Petch',monospace; font-weight:700; font-size:13px;
+    color:var(--muted); min-width:24px; flex-shrink:0}
+  .pair__line{font-size:14px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .pair__rv{color:var(--reves)}
+  .pair__sep{color:rgba(255,255,255,0.40); margin:0 6px}
+  .pair__dr{color:var(--drive)}
+
+  .actions{display:flex; flex-wrap:wrap; gap:9px; margin-top:18px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.18)}
+  .btn{appearance:none; cursor:pointer; flex:1 1 140px; display:inline-flex; align-items:center;
+    justify-content:center; gap:8px; padding:12px 14px; border-radius:12px; font-weight:600;
+    font-size:14px; border:1px solid rgba(255,255,255,0.25); background:rgba(255,255,255,0.08); color:var(--text);
+    transition:border-color .15s, background .15s, transform .08s}
+  .btn:hover{background:rgba(255,255,255,0.16); transform:translateY(-1px)}
+  .btn--primary{border-color:rgba(255,255,255,0.55);
+    background:rgba(255,255,255,0.15); color:#FFFFFF}
+  .btn--primary:hover{background:rgba(255,255,255,0.24)}
+  .btn--share{border-color:rgba(200,230,0,0.55);
+    background:rgba(200,230,0,0.12); color:var(--ball)}
+  .btn--share:hover{background:rgba(200,230,0,0.20)}
+  .btn svg{width:16px; height:16px}
+
+  #confetti{position:fixed; inset:0; pointer-events:none; z-index:80}
+  .confetti{position:absolute; width:8px; height:13px; opacity:0; will-change:transform; animation:fall 2.8s ease-in forwards}
+
+  footer{text-align:center; margin-top:24px; color:rgba(255,255,255,0.38); font-size:12px}
+  footer .wm{font-family:'Chakra Petch',monospace; letter-spacing:.2em; color:rgba(255,255,255,0.50)}
+
+  .toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px);
+    z-index:90; padding:11px 18px; border-radius:999px; font-size:13.5px; font-weight:600;
+    background:#0D2454; border:1px solid rgba(255,255,255,0.50); color:#FFFFFF;
+    box-shadow:0 14px 40px -12px #000; opacity:0; transition:opacity .2s, transform .25s; pointer-events:none}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  :focus-visible{outline:2px solid var(--ball); outline-offset:2px; border-radius:6px}
+
+  @keyframes rise{from{transform:translateY(14px); opacity:0} to{transform:translateY(0); opacity:1}}
+  @keyframes thump{0%{transform:scale(.6); opacity:0} 50%{transform:scale(1.12)} 100%{transform:scale(1); opacity:1}}
+  @keyframes fall{0%{transform:translateY(-12vh) rotate(0); opacity:1} 100%{transform:translateY(102vh) rotate(680deg); opacity:0}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spin{animation:spin .8s linear infinite}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+  }
+</style>
 </head>
-<body class="p-4 md:p-8">
+<body>
+<div id="confetti" aria-hidden="true"></div>
 
-    <!-- Contenedor para el confeti (se llena dinámicamente) -->
-    <div id="confetti-container" class="fixed inset-0 pointer-events-none z-[100]"></div>
+<main class="wrap">
+  <header class="hero">
+    <span class="eyebrow"><span class="ball"></span> Pádel</span>
+    <h1>Sorteo de<br><span class="glow">Parejas</span></h1>
+  </header>
 
-    <div class="max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-xl shadow-2xl border-t-8 border-court-blue">
-        <h1 class="text-3xl md:text-4xl font-bold text-center text-court-blue mb-2 flex items-center justify-center">
-            Sorteo de Parejas de Padel
-        </h1>
-        <p class="text-center text-gray-500 mb-8">Organiza tus partidos de forma justa y divertida.</p>
+  <section class="panel" aria-labelledby="t-cant">
+    <div class="panel__head">
+      <h2 class="panel__title" id="t-cant"><span class="dot"></span> Cuántas parejas</h2>
+    </div>
+    <div class="segmented" id="segParejas" role="group" aria-label="Cantidad de parejas"></div>
+    <p class="req">Necesitás <b id="reqN">2</b> jugadores de revés y <b id="reqN2">2</b> de drive.</p>
+  </section>
 
-        <!-- Cantidad de Parejas -->
-        <div class="mb-8 p-4 bg-court-light rounded-lg shadow-inner">
-            <h2 class="text-xl font-semibold text-court-blue mb-3 flex items-center">
-                <!-- EMOJI: Ábaco -->
-                <span class="text-2xl mr-2">🧮</span>
-                Cantidad de Parejas
-            </h2>
-            <label for="numParejas" class="block text-sm font-medium text-gray-700 mb-2">
-                Número de Parejas a Armar (múltiplos de 2, máx. 16):
-            </label>
-            <select id="numParejas" onchange="updatePlayerCounts()"
-                    class="w-full p-2 border border-court-blue rounded-lg focus:ring-accent-yellow focus:border-accent-yellow transition duration-150 appearance-none bg-white">
-                <option value="2">2 Parejas (4 jugadores)</option>
-                <option value="4">4 Parejas (8 jugadores)</option>
-                <option value="6">6 Parejas (12 jugadores)</option>
-                <option value="8">8 Parejas (16 jugadores)</option>
-                <option value="10">10 Parejas (20 jugadores)</option>
-                <option value="12">12 Parejas (24 jugadores)</option>
-                <option value="14">14 Parejas (28 jugadores)</option>
-                <option value="16">16 Parejas (32 jugadores)</option>
-            </select>
-            <p id="playerReqs" class="mt-2 text-sm text-gray-600">
-                Se necesitan 2 jugadores de Drive y 2 jugadores de Revés.
-            </p>
-        </div>
-
-        <!-- Ingreso de Jugadores -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <!-- Jugadores de Revés -->
-            <div class="p-4 bg-court-light rounded-lg shadow-inner"> <!-- Fondo y sombra aplicados -->
-                <!-- Título sin número -->
-                <h2 class="text-xl font-semibold text-court-blue mb-3 flex items-center"
-                    title="Escribe un nombre de jugador de revés por cada línea.">
-                    <!-- EMOJI: Bomba -->
-                    <span class="text-2xl mr-2">💣</span>
-                    Jugadores de Revés
-                </h2>
-                <!-- Textarea con estilo unificado -->
-                <textarea id="jugadoresReves" rows="6"
-                          placeholder="Escribe aquí un nombre por línea..."
-                          title="Escribe un nombre de jugador de revés por cada línea."
-                          class="w-full p-3 border-2 border-court-blue rounded-lg focus:ring-accent-yellow focus:border-accent-yellow transition duration-150 shadow-md"></textarea>
-                <span id="countReves" class="text-sm text-gray-500">0 jugadores</span>
-            </div>
-
-            <!-- Jugadores de Drive -->
-            <div class="p-4 bg-court-light rounded-lg shadow-inner"> <!-- Fondo y sombra aplicados -->
-                <!-- Título sin número -->
-                <h2 class="text-xl font-semibold text-court-blue mb-3 flex items-center"
-                    title="Escribe un nombre de jugador de drive por cada línea.">
-                    <!-- EMOJI: Arco con Flecha -->
-                    <span class="text-2xl mr-2">🏹</span>
-                    Jugadores de Drive
-                </h2>
-                <!-- Textarea con estilo unificado -->
-                <textarea id="jugadoresDrive" rows="6"
-                          placeholder="Escribe aquí un nombre por línea..."
-                          title="Escribe un nombre de jugador de drive por cada línea."
-                          class="w-full p-3 border-2 border-court-blue rounded-lg focus:ring-accent-yellow focus:border-accent-yellow transition duration-150 shadow-md"></textarea>
-                <span id="countDrive" class="text-sm text-gray-500">0 jugadores</span>
-            </div>
-        </div>
-
-        <!-- Botón de Sortear -->
-        <div class="text-center mb-8">
-            <button id="sortearBtn" onclick="iniciarSorteo()" disabled
-                    class="bg-court-blue hover:bg-accent-yellow text-white hover:text-court-blue font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center mx-auto">
-                <svg id="sortearIcon" class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path></svg>
-                <span id="sortearText">¡Sortear Parejas!</span>
-            </button>
-            <div id="errorMsg" class="mt-4 text-red-600 font-semibold hidden"></div>
-        </div>
+  <section class="panel" aria-labelledby="t-jug">
+    <div class="panel__head">
+      <h2 class="panel__title" id="t-jug"><span class="dot"></span> Jugadores</h2>
+    </div>
+    <div class="tabs-nav" role="tablist">
+      <button class="tab-btn tab-btn--reves is-active" id="tabBtnReves"
+        role="tab" aria-selected="true" aria-controls="tabReves">
+        <span class="pip"></span> Revés
+        <span class="tab-count" id="countReves">0/2</span>
+      </button>
+      <button class="tab-btn tab-btn--drive" id="tabBtnDrive"
+        role="tab" aria-selected="false" aria-controls="tabDrive">
+        <span class="pip"></span> Drive
+        <span class="tab-count" id="countDrive">0/2</span>
+      </button>
     </div>
 
-    <!-- Modal Structure (NEW) -->
-    <div id="sorteoModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-xl transform transition-all duration-300">
-            <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h2 id="modalTitle" class="text-2xl font-bold text-court-blue">Sorteando...</h2>
-                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-800 transition">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <div id="modalContent" class="py-4">
-                <!-- Animation / Results will go here -->
-            </div>
-            <div id="modalFooter" class="pt-4 border-t mt-4 text-center">
-                <button onclick="closeModal()" class="bg-court-blue hover:bg-accent-yellow text-white hover:text-court-blue font-bold py-2 px-6 rounded-full transition duration-300">
-                    Cerrar
-                </button>
-            </div>
-        </div>
+    <div class="side side--reves" id="tabReves" role="tabpanel" aria-labelledby="tabBtnReves">
+      <div class="ta-wrap" data-side="reves">
+        <div class="ta-nums" id="numsReves"></div>
+        <textarea class="ta-field" id="taReves" data-side="reves"
+          placeholder="Un nombre por línea…" aria-label="Jugadores de revés" rows="2" spellcheck="false"></textarea>
+      </div>
+      <p class="hint">Un nombre por línea · podés pegar una lista</p>
     </div>
 
-    <script>
-        // Elementos de la página principal
-        const numParejasInput = document.getElementById('numParejas');
-        const jugadoresRevesTextarea = document.getElementById('jugadoresReves');
-        const jugadoresDriveTextarea = document.getElementById('jugadoresDrive');
-        const playerReqs = document.getElementById('playerReqs');
-        const countReves = document.getElementById('countReves');
-        const countDrive = document.getElementById('countDrive');
-        const sortearBtn = document.getElementById('sortearBtn');
-        const errorMsg = document.getElementById('errorMsg');
-        const confettiContainer = document.getElementById('confetti-container');
+    <div class="side side--drive is-hidden" id="tabDrive" role="tabpanel" aria-labelledby="tabBtnDrive">
+      <div class="ta-wrap" data-side="drive">
+        <div class="ta-nums" id="numsDrive"></div>
+        <textarea class="ta-field" id="taDrive" data-side="drive"
+          placeholder="Un nombre por línea…" aria-label="Jugadores de drive" rows="2" spellcheck="false"></textarea>
+      </div>
+      <p class="hint">Un nombre por línea · podés pegar una lista</p>
+    </div>
 
-        // Elementos del Modal (NUEVOS)
-        const sorteoModal = document.getElementById('sorteoModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalContent = document.getElementById('modalContent');
+    <div class="cta-row">
+      <button class="cta" id="sortearBtn" disabled>
+        <span class="ball" id="ctaBall"></span>
+        <span id="ctaText">Sortear parejas</span>
+      </button>
+      <p class="err" id="errMsg" role="alert"></p>
+    </div>
+  </section>
 
-        // Escuchar cambios en los textareas y el select para actualizar el conteo
-        jugadoresRevesTextarea.addEventListener('input', updatePlayerCounts);
-        jugadoresDriveTextarea.addEventListener('input', updatePlayerCounts);
-        numParejasInput.addEventListener('change', updatePlayerCounts); // Asegurar que el cambio en select también actualice
+  <footer>
+    <span class="wm">SORTEO DE PAREJAS</span> · armá tu partido de pádel
+  </footer>
+</main>
 
-        /**
-         * Muestra el modal con un título específico.
-         * Se encarga de aplicar las clases base del modal, pero runSorteoAnimation
-         * se encargará del layout específico de la animación.
-         * @param {string} title - Título a mostrar en el modal.
-         */
-        function openModal(title) {
-            modalTitle.textContent = title;
-            // Usamos flex para centrar el modal y lo mostramos
-            sorteoModal.classList.remove('hidden');
-            sorteoModal.classList.add('flex');
-            // Limpiar confeti anterior
-            confettiContainer.innerHTML = '';
-        }
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="boardTitle">
+  <div class="board">
+    <div class="board__head">
+      <span class="board__title" id="boardTitle">Sorteando…</span>
+      <button class="iconbtn" id="closeBtn" aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="board__body" id="boardBody"></div>
+  </div>
+</div>
 
-        /**
-         * Oculta el modal y limpia su contenido.
-         */
-        function closeModal() {
-            sorteoModal.classList.remove('flex');
-            sorteoModal.classList.add('hidden');
-            modalContent.innerHTML = ''; // Limpiar contenido al cerrar
-            modalContent.classList.remove('shuffling'); // Asegurar que la animación se detiene si estaba activa
-            // Limpiar clases de layout específicas de la animación (asegurando que se eliminen todas las posibles clases de layout)
-            modalContent.classList.remove('flex', 'flex-col', 'items-center', 'justify-center', 'h-96', 'w-full', 'min-h-[300px]');
-            modalContent.classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'gap-4'); // Limpiar grid si se quedó
-            confettiContainer.innerHTML = ''; // Limpiar confeti al cerrar
-        }
+<div class="toast" id="toast"></div>
 
-        /**
-         * Actualiza el texto de requerimiento de jugadores y el conteo actual,
-         * y habilita/deshabilita el botón de sortear basado en la coincidencia EXACTA.
-         */
-        function updatePlayerCounts() {
-            const numParejas = parseInt(numParejasInput.value) || 2;
-            const required = numParejas;
-            playerReqs.textContent = `Se necesitan ${required} jugadores de Drive y ${required} jugadores de Revés.`;
+<script>
+(() => {
+  "use strict";
+  const OPTIONS = [2,4,6,8,10,12,14,16];
+  const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-            // Obtener listas de jugadores, eliminando líneas vacías
-            const revesList = jugadoresRevesTextarea.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-            const driveList = jugadoresDriveTextarea.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+  const state = { pairs: 2, reves: [], drive: [] };
+  const sideMeta = { reves:{filled:0,dup:false}, drive:{filled:0,dup:false} };
+  let lastResult = null;
 
-            const revesCount = revesList.length;
-            const driveCount = driveList.length;
+  const $ = (id) => document.getElementById(id);
+  const segWrap = $("segParejas");
+  const reqN = $("reqN"), reqN2 = $("reqN2");
+  const countReves = $("countReves"), countDrive = $("countDrive");
+  const sortearBtn = $("sortearBtn"), ctaText = $("ctaText"), ctaBall = $("ctaBall"), errMsg = $("errMsg");
+  const overlay = $("overlay"), boardBody = $("boardBody"), boardTitle = $("boardTitle"), closeBtn = $("closeBtn");
+  const confettiBox = $("confetti"), toast = $("toast");
 
-            const revesOk = revesCount === required;
-            const driveOk = driveCount === required;
+  const esc = (s) => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const norm = (s) => (s||"").replace(/\s+/g," ").trim();
+  const shuffle = (a) => { for (let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]];} return a; };
 
-            // --- LÓGICA PARA MOSTRAR LA CANTIDAD FALTANTE/SOBRANTE ---
-            const getStatusMessage = (count, required) => {
-                const diff = count - required;
-                if (diff === 0) return 'Cantidad exacta';
-                if (diff > 0) return `Sobran ${diff}`;
-                return `Faltan ${Math.abs(diff)}`;
-            };
-
-            const revesStatusMessage = getStatusMessage(revesCount, required);
-            const driveStatusMessage = getStatusMessage(driveCount, required);
-
-            // 1. Actualizar el conteo visual
-            countReves.textContent = `${revesCount} jugadores (${revesStatusMessage})`;
-            countDrive.textContent = `${driveCount} jugadores (${driveStatusMessage})`;
-
-            // 2. Resaltar si la cantidad no es EXACTA
-            countReves.className = `text-sm ${revesOk ? 'text-green-600' : 'text-red-500 font-semibold'}`;
-            countDrive.className = `text-sm ${driveOk ? 'text-green-600' : 'text-red-500 font-semibold'}`;
-
-            // 3. Deshabilitar/Habilitar botón basado en la validación EXACTA
-            const allOk = revesOk && driveOk;
-            sortearBtn.disabled = !allOk;
-
-            // 4. Limpiar el mensaje de error de la interfaz principal si la validación pasa
-            if (allOk) {
-                errorMsg.classList.add('hidden');
-                errorMsg.textContent = '';
-            }
-        }
-
-        /**
-         * Función auxiliar para mezclar un array (Algoritmo Fisher-Yates).
-         * @param {Array} array - El array a mezclar.
-         * @returns {Array} - El array mezclado.
-         */
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        /**
-         * Ejecuta la animación combinada de cuenta regresiva y sorteo (barajado)
-         * mostrando la cuenta regresiva arriba.
-         */
-        async function runSorteoAnimation() {
-            const ANIMATION_DURATION = 3000; // 3 segundos para el sorteo completo
-            const numParejas = parseInt(numParejasInput.value) || 2;
-
-            // Deshabilitar botón y cambiar texto
-            sortearBtn.disabled = true;
-            document.getElementById('sortearText').textContent = 'Sorteando...';
-            document.getElementById('sortearIcon').classList.add('animate-spin');
-
-            // 1. Configuración inicial del modal para el efecto combinado (ahora vertical)
-            modalContent.classList.add('flex', 'flex-col', 'items-center', 'w-full', 'min-h-[300px]');
-            modalContent.innerHTML = `
-                <!-- Contenedor de Cuenta Regresiva (Arriba) -->
-                <!-- Agregamos 'mt-6' para separar visualmente el contador del borde superior de modalContent. -->
-                <div id="countdownDisplay" class="mb-6 p-4 rounded-xl bg-court-light shadow-inner text-center mt-6">
-                    <span id="countdownNumber" class="text-6xl md:text-8xl font-black text-court-blue animate-bounce-fast">3</span>
-                    <p class="text-lg md:text-xl text-gray-600 mt-2">¡Sorteando parejas!</p>
-                </div>
-                <!-- Contenedor de Barajado (Abajo) -->
-                <div id="shufflingCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4 shuffling w-full max-w-lg">
-                </div>
-            `;
-
-            const countdownNumber = document.getElementById('countdownNumber');
-            const shufflingCardsContainer = document.getElementById('shufflingCardsContainer');
-
-            // 2. Lógica del Contador (3, 2, 1, ¡Ya!)
-            let count = 3;
-
-            const countdownInterval = setInterval(() => {
-                count--;
-                if (count >= 1) {
-                    countdownNumber.textContent = count;
-                    // Reiniciar animación de rebote
-                    countdownNumber.classList.remove('animate-bounce-fast');
-                    void countdownNumber.offsetWidth;
-                    countdownNumber.classList.add('animate-bounce-fast');
-                } else if (count === 0) {
-                    countdownNumber.textContent = '¡Ya!';
-                    countdownNumber.classList.remove('animate-bounce-fast');
-                } else {
-                    clearInterval(countdownInterval);
-                }
-            }, 1000); // 1 segundo por número (3, 2, 1)
-
-            // 3. Lógica de Barajado (Visual Shuffling) - Se ejecuta por 3 segundos
-            let animationStartTime = Date.now();
-            const shuffleInterval = 100; // Intervalo de actualización rápido
-
-            // Inicia la animación de barajado inmediatamente
-            shufflingCardsContainer.classList.add('shuffling');
-
-            const shuffling = setInterval(() => {
-                if (Date.now() - animationStartTime >= ANIMATION_DURATION) {
-                    clearInterval(shuffling);
-                    return;
-                }
-
-                // Generar listas para visual de barajado
-                let revesList = jugadoresRevesTextarea.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-                let driveList = jugadoresDriveTextarea.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-
-                if (revesList.length >= numParejas && driveList.length >= numParejas) {
-                    revesList = shuffleArray(revesList.slice(0, numParejas));
-                    driveList = shuffleArray(driveList.slice(0, numParejas));
-
-                    let tempHTML = '';
-                    for (let i = 0; i < numParejas; i++) {
-                        const reves = revesList[i] || 'Revés?';
-                        const drive = driveList[i] || 'Drive?';
-                        tempHTML += createResultCard(`Pareja ${i + 1}`, reves, drive);
-                    }
-                    shufflingCardsContainer.innerHTML = tempHTML;
-                }
-            }, shuffleInterval);
-
-            // 4. Esperar la duración total y resolver
-            return new Promise(resolve => {
-                setTimeout(() => {
-                    clearInterval(countdownInterval);
-                    clearInterval(shuffling);
-
-                    // Cleanup UI (la animación es eliminada al resolver)
-                    modalContent.innerHTML = '';
-                    // Limpieza actualizada con las clases que se añadieron
-                    modalContent.classList.remove('flex', 'flex-col', 'items-center', 'w-full', 'min-h-[300px]');
-
-                    // Restaurar estado del botón
-                    document.getElementById('sortearIcon').classList.remove('animate-spin');
-                    sortearBtn.disabled = false;
-                    document.getElementById('sortearText').textContent = '¡Sortear Parejas!';
-
-                    resolve();
-                }, ANIMATION_DURATION);
-            });
-        }
-
-        /**
-         * Genera y anima partículas de confeti.
-         */
-        function showConfetti() {
-            // Nota: El sonido de celebración ha sido eliminado de aquí.
-
-            const colors = ['#FFD700', '#FF9800', '#0060A0', '#E3F2FD', '#BFFF00', '#FF0000'];
-            const numConfetti = 50;
-
-            for (let i = 0; i < numConfetti; i++) {
-                const c = document.createElement('div');
-                c.className = 'confetti';
-                c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                c.style.left = `${Math.random() * 100}vw`;
-                c.style.width = `${Math.random() * 5 + 3}px`;
-                c.style.height = `${Math.random() * 8 + 4}px`;
-                c.style.animationDuration = `${Math.random() * 1.5 + 2}s`;
-                c.style.animationDelay = `${Math.random() * 0.5}s`;
-                confettiContainer.appendChild(c);
-            }
-
-            // Limpiar confeti después de que termine la animación
-            setTimeout(() => {
-                confettiContainer.innerHTML = '';
-            }, 3000);
-        }
-
-        /**
-         * Crea el HTML para una tarjeta de pareja.
-         * @param {string} title - Título de la pareja (e.g., Pareja 1).
-         * @param {string} reves - Nombre del jugador de revés.
-         * @param {string} drive - Nombre del jugador de drive.
-         * @returns {string} - HTML de la tarjeta.
-         */
-        function createResultCard(title, reves, drive) {
-            return `
-                <div class="result-card bg-court-light p-4 rounded-xl shadow-lg border-l-4 border-accent-yellow flex flex-col justify-center">
-                    <h3 class="text-lg font-bold text-court-blue mb-2">${title}</h3>
-                    <div class="flex items-center text-gray-800 font-semibold text-base mb-1">
-                        <!-- EMOJI de Revés (Bomba) -->
-                        <span class="text-xl mr-2">💣</span>
-                        ${reves}
-                        <span class="text-reves-color font-normal text-sm ml-1">(Revés)</span>
-                    </div>
-                    <div class="flex items-center text-gray-800 font-semibold text-base">
-                        <!-- EMOJI de Drive (Arco con Flecha) -->
-                        <span class="text-xl mr-2">🏹</span>
-                        ${drive}
-                        <span class="text-drive-color font-normal text-sm ml-1">(Drive)</span>
-                    </div>
-                </div>
-            `;
-        }
-
-        /**
-         * Realiza el sorteo final de las parejas.
-         */
-        async function iniciarSorteo() {
-            // 1. Validaciones
-            const numParejas = parseInt(numParejasInput.value) || 0;
-            const required = numParejas;
-
-            let revesList = jugadoresRevesTextarea.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-            let driveList = jugadoresDriveTextarea.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-
-            errorMsg.classList.add('hidden');
-            errorMsg.textContent = '';
-
-            // Validación defensiva (el botón ya debería estar deshabilitado si no hay coincidencia exacta)
-            if (revesList.length !== required || driveList.length !== required) {
-                errorMsg.textContent = `Error: Debes tener EXACTAMENTE ${required} jugadores de Revés y ${required} de Drive.`;
-                errorMsg.classList.remove('hidden');
-                return;
-            }
-
-            // 2. Ejecutar la animación y abrir modal
-            openModal('Sorteando Parejas...');
-
-            await runSorteoAnimation(); // Ahora maneja la cuenta regresiva y el shuffling
-
-            // 3. Preparar las listas finales
-            revesList = shuffleArray(revesList.slice(0, required));
-            driveList = shuffleArray(driveList.slice(0, required));
-
-            // 4. Configurar el layout para los resultados finales y mostrarlos
-            modalContent.classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'gap-4');
-
-            let finalHTML = '';
-            for (let i = 0; i < numParejas; i++) {
-                finalHTML += createResultCard(`Pareja ${i + 1}`, revesList[i], driveList[i]);
-            }
-
-            modalContent.innerHTML = finalHTML; // Overwrites the animation structure
-            modalTitle.textContent = '¡Parejas Sorteadas!'; // Cambiar título del modal
-
-            // 5. Mostrar confeti
-            showConfetti();
-        }
-
-        // Inicialización al cargar la página
-        window.onload = () => {
-            // ¡ELIMINADOS LOS VALORES DE EJEMPLO para dejar los campos limpios!
-            // jugadoresRevesTextarea.value = "Juan\nPedro\nMariano\nLuis";
-            // jugadoresDriveTextarea.value = "María\nSofía\nAna\nCarla";
-
-            // Se mantiene la llamada para establecer el estado inicial (botón deshabilitado y conteos en 0).
-            updatePlayerCounts();
-        };
-
-    </script>
-</body>
-</html>
+  /* ---- count selector ---- */
+  OPTIONS.forEach(n => {
+    const b = document.createElement("button");
+    b.className = "seg"; b.type = "button"; b.dataset.n = n;
+    b.setAttribute("aria-pressed", n === state.pairs ? "true" : "false");
+    b.innerHTML = `${n}<small>${n*2} jug.</small>`;
+    b.addEventListener("click", () => {
+      state.pairs = n;
+      [...segWrap.children].forEach(c => c.setAttribute("aria-pressed", c.dataset.n == n ? "true":"f
