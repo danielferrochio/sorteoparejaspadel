@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sorteo de Parejas de Pádel</title>
+<meta name="description" content="Sorteá las parejas de tu partido de pádel: un jugador de revés con uno de drive, al azar." />
+<meta name="theme-color" content="#0D2454" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230D2454'/%3E%3Ccircle cx='32' cy='32' r='19' fill='%23C8E600'/%3E%3Cpath d='M17 24c9 4 21 4 30 0M17 40c9-4 21-4 30 0' fill='none' stroke='%230D2454' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Sorteo de Parejas de Pádel" />
+<meta property="og:description" content="Cargá los jugadores de revés y de drive y sorteá las parejas al azar." />
+<meta property="og:url" content="https://danielferrochio.github.io/sorteoparejaspadel/" />
+<meta name="twitter:card" content="summary" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0D2454; --bg2:#0F3880; --surface:#1A52A8; --surface2:#1348A0;
+    --line:rgba(255,255,255,0.20); --line2:rgba(255,255,255,0.12);
+    --court:#FFFFFF; --ball:#C8E600; --drive:#FBBF24; --reves:#4ADE80;
+    --text:#FFFFFF; --muted:rgba(255,255,255,0.78); --danger:#FF6B6B; --ok:#86EFAC;
+    --r:14px; --r-lg:22px;
+    --maxw:920px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; min-height:100vh; color:var(--text); line-height:1.55;
+    font-family:'Sora',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    background:
+      radial-gradient(900px 400px at 50% -80px, rgba(255,255,255,.08), transparent 60%),
+      linear-gradient(180deg, #1A52A8 0%, #0D2454 100%);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--ball); color:#0a0a0a}
+  a{color:var(--court)}
+
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:clamp(20px,4vw,48px) clamp(16px,4vw,28px) 72px}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative; margin-bottom:24px; overflow:hidden;
+    border:2px solid rgba(255,255,255,0.70); border-radius:var(--r-lg);
+    background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+    padding:clamp(26px,5vw,44px) clamp(22px,4vw,40px) clamp(30px,5vw,46px);
+  }
+  .eyebrow{display:inline-flex; align-items:center; gap:9px;
+    font-family:'Chakra Petch',monospace; font-weight:600; font-size:12px;
+    letter-spacing:.32em; text-transform:uppercase; color:var(--court);
+    padding:6px 12px; border:1px solid rgba(255,255,255,0.35);
+    border-radius:999px; background:rgba(255,255,255,0.09);
+  }
+  .eyebrow .ball{width:9px; height:9px; border-radius:50%; background:var(--ball);
+    box-shadow:0 0 10px var(--ball), 0 0 2px #fff inset}
+  .hero h1{margin:18px 0 0; font-family:'Chakra Petch',sans-serif; font-weight:700;
+    font-size:clamp(34px,7vw,62px); line-height:.96; letter-spacing:-.01em;
+    text-transform:uppercase;
+  }
+  .hero h1 .glow{color:var(--ball); text-shadow:0 0 28px rgba(200,230,0,.45)}
+  .hero p{margin:14px 0 0; max-width:46ch; color:var(--muted); font-size:clamp(14px,2.4vw,16px)}
+
+  /* ---------- Panels ---------- */
+  .panel{border:2px solid rgba(255,255,255,0.70); border-radius:var(--r-lg); background:rgba(255,255,255,0.07);
+    padding:clamp(18px,3.4vw,26px); margin-bottom:24px}
+  .panel__head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:16px}
+  .panel__title{display:inline-flex; align-items:center; gap:9px;
+    font-family:'Chakra Petch',monospace; font-weight:600; font-size:12px;
+    letter-spacing:.32em; text-transform:uppercase; color:rgba(255,255,255,0.85);
+    padding:6px 14px; border:1px solid rgba(255,255,255,0.45);
+    border-radius:999px; background:rgba(255,255,255,0.10)}
+  .panel__title .dot{width:7px; height:7px; border-radius:50%; background:var(--ball);
+    box-shadow:0 0 8px var(--ball); flex-shrink:0}
+
+  /* ---------- Count selector ---------- */
+  .segmented{display:flex; flex-wrap:wrap; gap:8px}
+  .seg{appearance:none; cursor:pointer; min-width:54px; padding:11px 8px;
+    border:1px solid rgba(255,255,255,0.18); border-radius:12px; background:rgba(255,255,255,0.08);
+    color:var(--text); font-family:'Chakra Petch',monospace; font-weight:600; font-size:18px;
+    line-height:1; transition:border-color .15s, background .15s, transform .08s, box-shadow .15s}
+  .seg small{display:block; font-family:'Sora',sans-serif; font-weight:500; font-size:10px;
+    letter-spacing:.04em; color:var(--muted); margin-top:5px; text-transform:none}
+  .seg:hover{background:rgba(255,255,255,.12); transform:translateY(-1px)}
+  .seg[aria-pressed="true"]{border-color:var(--court); background:rgba(255,255,255,0.14);
+    box-shadow:0 0 0 1px var(--court), 0 0 22px -6px var(--court)}
+  .seg[aria-pressed="true"] small{color:var(--court)}
+  .req{margin:14px 0 0; font-size:13px; color:var(--muted)}
+  .req b{color:var(--text); font-weight:600}
+
+  /* ---------- Tabs de jugadores ---------- */
+  .tabs-nav{display:flex; border-bottom:1px solid rgba(255,255,255,0.15); margin-bottom:18px}
+  .tab-btn{flex:1; display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:11px 8px; background:transparent; border:0; border-bottom:2px solid transparent;
+    margin-bottom:-1px; cursor:pointer; font-family:'Chakra Petch',sans-serif; font-weight:700;
+    font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,0.72);
+    transition:color .15s, border-color .15s, background .15s}
+  .tab-btn .pip{width:8px; height:8px; border-radius:50%; flex-shrink:0; opacity:.7; transition:opacity .15s}
+  .tab-btn--reves .pip{background:var(--reves); box-shadow:0 0 8px var(--reves)}
+  .tab-btn--drive .pip{background:var(--drive); box-shadow:0 0 8px var(--drive)}
+  .tab-btn--reves.is-active{color:var(--reves); border-bottom-color:var(--reves); background:rgba(74,222,128,0.08)}
+  .tab-btn--drive.is-active{color:var(--drive); border-bottom-color:var(--drive); background:rgba(251,191,36,0.08)}
+  .tab-btn.is-active .pip{opacity:1}
+  .tab-count{font-family:'Chakra Petch',monospace; font-size:11px; font-weight:700;
+    padding:3px 8px; border-radius:999px; white-space:nowrap; transition:color .15s, border-color .15s, background .15s}
+  .tab-btn--reves .tab-count{color:var(--reves); background:rgba(74,222,128,0.10); border:1px solid rgba(74,222,128,0.30)}
+  .tab-btn--drive .tab-count{color:var(--drive); background:rgba(251,191,36,0.10); border:1px solid rgba(251,191,36,0.30)}
+  .tab-btn--reves.is-active .tab-count{color:var(--reves); background:rgba(74,222,128,0.16); border-color:rgba(74,222,128,0.50)}
+  .tab-btn--drive.is-active .tab-count{color:var(--drive); background:rgba(251,191,36,0.16); border-color:rgba(251,191,36,0.50)}
+  .tab-count.is-ok{color:var(--ok) !important; background:rgba(134,239,172,0.12) !important; border-color:rgba(134,239,172,0.35) !important}
+  .tab-count.is-bad{color:var(--danger) !important; background:rgba(255,107,107,0.10) !important; border-color:rgba(255,107,107,0.30) !important}
+  .side{position:relative}
+  .side--reves{--c:var(--reves)}
+  .side--drive{--c:var(--drive)}
+  .side.is-hidden{display:none}
+
+  /* ---- textarea con numeración lateral ---- */
+  /* line-height fijo en px para que JS pueda calcular altura y alinear números */
+  :root{ --ta-lh:22px; --ta-pt:10px; --ta-fs:14px }
+  .ta-wrap{display:flex; border-radius:11px; overflow:hidden;
+    background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.22);
+    transition:border-color .15s, box-shadow .15s}
+  .side--reves .ta-wrap:focus-within{border-color:var(--reves); box-shadow:0 0 0 1px var(--reves)}
+  .side--drive .ta-wrap:focus-within{border-color:var(--drive); box-shadow:0 0 0 1px var(--drive)}
+  .ta-wrap.has-dupe{border-color:var(--danger); box-shadow:0 0 0 1px rgba(255,107,107,0.60)}
+  .ta-nums{display:flex; flex-direction:column;
+    padding-top:var(--ta-pt); padding-bottom:var(--ta-pt);
+    background:rgba(0,0,0,0.18); border-right:1px solid rgba(255,255,255,0.12);
+    min-width:36px; user-select:none; pointer-events:none; flex-shrink:0}
+  .ta-num{font-family:'Chakra Petch',monospace; font-weight:600; font-size:11px;
+    text-align:center; height:var(--ta-lh); line-height:var(--ta-lh); padding:0 6px; display:block}
+  .side--reves .ta-num.filled{color:var(--reves)}
+  .side--drive .ta-num.filled{color:var(--drive)}
+  .ta-num.empty{color:rgba(255,255,255,0.45)}
+  .ta-num.dupe{color:var(--danger)}
+  .ta-field{flex:1; padding:var(--ta-pt) 12px; background:transparent; border:0; outline:0;
+    color:var(--text); font-family:inherit; font-size:var(--ta-fs); line-height:var(--ta-lh);
+    resize:none; overflow-y:hidden; overflow-x:auto; white-space:pre; min-height:calc(var(--ta-lh) + var(--ta-pt)*2)}
+  .ta-field:focus{outline:0}
+  .ta-field:focus-visible{outline:0}
+  .ta-field::placeholder{color:rgba(255,255,255,0.55)}
+  .hint{margin:9px 2px 0; font-size:12px; color:rgba(255,255,255,0.72)}
+
+  /* ---------- CTA ---------- */
+  .cta-row{margin-top:22px; text-align:center}
+  .cta{position:relative; display:inline-flex; align-items:center; gap:13px;
+    font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:18px; letter-spacing:.06em;
+    text-transform:uppercase; color:#0a1206; cursor:pointer;
+    padding:16px 34px; border:0; border-radius:999px;
+    background:linear-gradient(180deg,#d8f000,var(--ball));
+    box-shadow:0 0 0 1px rgba(200,230,0,.6), 0 14px 40px -12px var(--ball), 0 0 60px -18px var(--ball);
+    transition:transform .12s, box-shadow .2s, filter .2s}
+  .cta:hover:not(:disabled){transform:translateY(-2px) scale(1.015);
+    box-shadow:0 0 0 1px rgba(200,230,0,.8), 0 20px 52px -12px var(--ball), 0 0 80px -14px var(--ball)}
+  .cta:active:not(:disabled){transform:translateY(0) scale(.99)}
+  .cta:disabled{cursor:not-allowed; filter:grayscale(.7) brightness(.6); box-shadow:0 0 0 1px var(--line2)}
+  .cta .ball{width:18px; height:18px; border-radius:50%; background:#0a1206; position:relative}
+  .cta .ball::after{content:""; position:absolute; inset:3px 7px auto 3px; height:2px; border-radius:2px;
+    background:var(--ball); transform:rotate(28deg)}
+  .err{margin:14px 0 0; color:var(--danger); font-size:13.5px; font-weight:500; min-height:18px}
+
+  /* ---------- Overlay / results ---------- */
+  .overlay{position:fixed; inset:0; z-index:60; display:none; place-items:center;
+    padding:18px; background:rgba(4,7,14,.82); backdrop-filter:blur(7px)}
+  .overlay.open{display:grid}
+  .board{width:100%; max-width:640px; max-height:92vh; max-height:92dvh; overflow:auto;
+    border:1px solid var(--line2); border-radius:var(--r-lg);
+    background:linear-gradient(180deg,#1A52A8,#0D2454); box-shadow:0 40px 120px -30px #000;
+    animation:rise .35s cubic-bezier(.2,.7,.3,1)}
+  .board__head{position:sticky; top:0; z-index:2; display:flex; align-items:center;
+    justify-content:space-between; gap:12px; padding:18px 20px;
+    border-bottom:1px solid rgba(255,255,255,0.18); background:linear-gradient(180deg,#1A52A8,rgba(26,82,168,.6))}
+  .board__title{font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:17px;
+    letter-spacing:.04em; text-transform:uppercase}
+  .iconbtn{appearance:none; cursor:pointer; width:40px; height:40px; border-radius:10px;
+    border:1px solid rgba(255,255,255,0.30); background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.85);
+    display:grid; place-items:center; transition:color .15s, border-color .15s, background .15s}
+  .iconbtn:hover{color:#fff; background:rgba(255,255,255,0.15)}
+  .board__body{padding:18px 20px}
+
+  .countdown{display:grid; place-items:center; min-height:300px; gap:10px; text-align:center}
+  .countdown .num{font-family:'Chakra Petch',monospace; font-weight:700;
+    font-size:clamp(78px,22vw,128px); line-height:1; color:var(--ball);
+    text-shadow:0 0 40px rgba(200,230,0,.5); animation:thump .9s ease}
+  .countdown .lbl{font-family:'Chakra Petch',sans-serif; letter-spacing:.22em; text-transform:uppercase;
+    font-size:13px; color:var(--muted)}
+  .countdown .net{width:min(380px,80%); height:1px; margin-top:6px;
+    background:repeating-linear-gradient(90deg,var(--court) 0 6px,transparent 6px 12px); opacity:.5}
+
+  /* ---- lista de parejas sorteadas ---- */
+  .pairs{display:grid; gap:0; border:1px solid rgba(255,255,255,0.25); border-radius:var(--r); overflow:hidden}
+  .pair{display:flex; align-items:flex-start; gap:12px;
+    padding:12px 14px; border-bottom:1px solid rgba(255,255,255,0.10);
+    background:rgba(255,255,255,0.04); animation:rise .35s ease backwards}
+  .pair:last-child{border-bottom:0}
+  .pair:nth-child(odd){background:rgba(255,255,255,0.07)}
+  .pair__no{font-family:'Chakra Petch',monospace; font-weight:700; font-size:13px;
+    color:var(--muted); min-width:24px; flex-shrink:0; padding-top:15px; font-variant-numeric:tabular-nums}
+  .pair__line{flex:1; min-width:0; display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .pair__p{min-width:0; display:flex; flex-direction:column; gap:2px}
+  .pair__tag{font-family:'Chakra Petch',monospace; font-weight:700; font-size:10px;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--muted)}
+  .pair__tag::before{content:""; display:inline-block; width:7px; height:7px; border-radius:50%;
+    margin-right:6px; vertical-align:1px; background:currentColor}
+  .pair__name{font-size:15px; font-weight:600; line-height:1.3; overflow-wrap:anywhere}
+  .pair__rv .pair__tag::before, .pair__rv .pair__name{color:var(--reves)}
+  .pair__dr .pair__tag::before, .pair__dr .pair__name{color:var(--drive)}
+
+  .actions{display:flex; flex-wrap:wrap; gap:9px; margin-top:18px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.18)}
+  .btn{appearance:none; cursor:pointer; flex:1 1 140px; display:inline-flex; align-items:center;
+    justify-content:center; gap:8px; padding:12px 14px; border-radius:12px; font-weight:600;
+    font-size:14px; border:1px solid rgba(255,255,255,0.25); background:rgba(255,255,255,0.08); color:var(--text);
+    transition:border-color .15s, background .15s, transform .08s}
+  .btn:hover{background:rgba(255,255,255,0.16); transform:translateY(-1px)}
+  .btn--primary{border-color:rgba(255,255,255,0.55);
+    background:rgba(255,255,255,0.15); color:#FFFFFF}
+  .btn--primary:hover{background:rgba(255,255,255,0.24)}
+  .btn--share{border-color:rgba(200,230,0,0.55);
+    background:rgba(200,230,0,0.12); color:var(--ball)}
+  .btn--share:hover{background:rgba(200,230,0,0.20)}
+  .btn svg{width:16px; height:16px}
+
+  #confetti{position:fixed; inset:0; pointer-events:none; z-index:80}
+  .confetti{position:absolute; width:8px; height:13px; opacity:0; will-change:transform; animation:fall 2.8s ease-in forwards}
+
+  footer{text-align:center; margin-top:24px; color:rgba(255,255,255,0.65); font-size:12px}
+  footer .wm{font-family:'Chakra Petch',monospace; letter-spacing:.2em; color:rgba(255,255,255,0.80)}
+
+  .toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px);
+    z-index:90; padding:11px 18px; border-radius:999px; font-size:13.5px; font-weight:600;
+    background:#0D2454; border:1px solid rgba(255,255,255,0.50); color:#FFFFFF;
+    box-shadow:0 14px 40px -12px #000; opacity:0; transition:opacity .2s, transform .25s; pointer-events:none}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  :focus-visible{outline:2px solid var(--ball); outline-offset:2px; border-radius:6px}
+
+  @keyframes rise{from{transform:translateY(14px); opacity:0} to{transform:translateY(0); opacity:1}}
+  @keyframes thump{0%{transform:scale(.6); opacity:0} 50%{transform:scale(1.12)} 100%{transform:scale(1); opacity:1}}
+  @keyframes fall{0%{transform:translateY(-12vh) rotate(0); opacity:1} 100%{transform:translateY(102vh) rotate(680deg); opacity:0}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spin{animation:spin .8s linear infinite}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+<div id="confetti" aria-hidden="true"></div>
+
+<main class="wrap">
+  <header class="hero">
+    <span class="eyebrow"><span class="ball"></span> Pádel</span>
+    <h1>Sorteo de<br><span class="glow">Parejas</span></h1>
+  </header>
+
+  <section class="panel" aria-labelledby="t-cant">
+    <div class="panel__head">
+      <h2 class="panel__title" id="t-cant"><span class="dot"></span> Cuántas parejas</h2>
+    </div>
+    <div class="segmented" id="segParejas" role="group" aria-label="Cantidad de parejas"></div>
+    <p class="req">Necesitás <b id="reqN">2</b> jugadores de revés y <b id="reqN2">2</b> de drive.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="t-jug">
+    <div class="panel__head">
+      <h2 class="panel__title" id="t-jug"><span class="dot"></span> Jugadores</h2>
+    </div>
+    <div class="tabs-nav" role="tablist">
+      <button class="tab-btn tab-btn--reves is-active" id="tabBtnReves"
+        role="tab" aria-selected="true" aria-controls="tabReves">
+        <span class="pip"></span> Revés
+        <span class="tab-count" id="countReves">0/2</span>
+      </button>
+      <button class="tab-btn tab-btn--drive" id="tabBtnDrive"
+        role="tab" aria-selected="false" aria-controls="tabDrive">
+        <span class="pip"></span> Drive
+        <span class="tab-count" id="countDrive">0/2</span>
+      </button>
+    </div>
+
+    <div class="side side--reves" id="tabReves" role="tabpanel" aria-labelledby="tabBtnReves">
+      <div class="ta-wrap" data-side="reves">
+        <div class="ta-nums" id="numsReves"></div>
+        <textarea class="ta-field" id="taReves" data-side="reves"
+          placeholder="Un nombre por línea…" aria-label="Jugadores de revés" rows="2" wrap="off" spellcheck="false"></textarea>
+      </div>
+      <p class="hint">Un nombre por línea · podés pegar una lista</p>
+    </div>
+
+    <div class="side side--drive is-hidden" id="tabDrive" role="tabpanel" aria-labelledby="tabBtnDrive">
+      <div class="ta-wrap" data-side="drive">
+        <div class="ta-nums" id="numsDrive"></div>
+        <textarea class="ta-field" id="taDrive" data-side="drive"
+          placeholder="Un nombre por línea…" aria-label="Jugadores de drive" rows="2" wrap="off" spellcheck="false"></textarea>
+      </div>
+      <p class="hint">Un nombre por línea · podés pegar una lista</p>
+    </div>
+
+    <div class="cta-row">
+      <button class="cta" id="sortearBtn" disabled>
+        <span class="ball" id="ctaBall"></span>
+        <span id="ctaText">Sortear parejas</span>
+      </button>
+      <p class="err" id="errMsg" role="alert"></p>
+    </div>
+  </section>
+
+  <footer>
+    <span class="wm">SORTEO DE PAREJAS</span> · armá tu partido de pádel
+  </footer>
+</main>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="boardTitle">
+  <div class="board">
+    <div class="board__head">
+      <span class="board__title" id="boardTitle">Sorteando…</span>
+      <button class="iconbtn" id="closeBtn" aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="board__body" id="boardBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  "use strict";
+  const OPTIONS = [2,4,6,8,10,12,14,16];
+  const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const state = { pairs: 2, reves: [], drive: [] };
+  const sideMeta = { reves:{filled:0,dup:false}, drive:{filled:0,dup:false} };
+  let lastResult = null;
+
+  const $ = (id) => document.getElementById(id);
+  const segWrap = $("segParejas");
+  const reqN = $("reqN"), reqN2 = $("reqN2");
+  const countReves = $("countReves"), countDrive = $("countDrive");
+  const sortearBtn = $("sortearBtn"), ctaText = $("ctaText"), ctaBall = $("ctaBall"), errMsg = $("errMsg");
+  const overlay = $("overlay"), boardBody = $("boardBody"), boardTitle = $("boardTitle"), closeBtn = $("closeBtn");
+  const confettiBox = $("confetti"), toast = $("toast");
+
+  const esc = (s) => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const norm = (s) => (s||"").replace(/\s+/g," ").trim();
+  const shuffle = (a) => { for (let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]];} return a; };
+
+  /* ---- count selector ---- */
+  OPTIONS.forEach(n => {
+    const b = document.createElement("button");
+    b.className = "seg"; b.type = "button"; b.dataset.n = n;
+    b.setAttribute("aria-pressed", n === state.pairs ? "true" : "false");
+    b.innerHTML = `${n}<small>${n*2} jug.</small>`;
+    b.addEventListener("click", () => {
+      state.pairs = n;
+      [...segWrap.children].forEach(c => c.setAttribute("aria-pressed", c.dataset.n == n ? "true":"false"));
+      validate();
+    });
+    segWrap.appendChild(b);
+  });
+
+  /* ---- textarea logic ---- */
+  const LH = 22;   // px — debe coincidir con --ta-lh
+  const PT = 10;   // px — debe coincidir con --ta-pt
+
+  function getLines(side){
+    const ta = $("ta" + (side === "reves" ? "Reves" : "Drive"));
+    // NO aplicar norm aquí para no perder líneas vacías intermedias
+    return ta.value.split("\n");
+  }
+
+  function getNormed(side){
+    return getLines(side).map(norm);
+  }
+
+  function syncHeight(ta){
+    ta.style.height = "0";
+    ta.style.height = Math.max(ta.scrollHeight, LH + PT * 2) + "px";
+  }
+
+  function renderNums(side){
+    const numsEl = $(side === "reves" ? "numsReves" : "numsDrive");
+    const taWrap = document.querySelector(`.ta-wrap[data-side="${side}"]`);
+    const lines = getNormed(side);   // normalizado para lógica
+    const req = state.pairs;
+
+    // detectar dupes solo entre líneas con contenido
+    const seen = {}, dupIdx = new Set();
+    lines.forEach((v,i) => {
+      if (!v) return;
+      const k = v.toLowerCase();
+      if (seen[k] != null){ dupIdx.add(i); dupIdx.add(seen[k]); } else seen[k] = i;
+    });
+
+    // renderizar exactamente req números
+    numsEl.innerHTML = "";
+    for (let i = 0; i < req; i++){
+      const span = document.createElement("span");
+      span.className = "ta-num";
+      span.textContent = String(i+1).padStart(2,"0");
+      const val = lines[i];
+      if (dupIdx.has(i)) span.classList.add("dupe");
+      else if (val) span.classList.add("filled");
+      else span.classList.add("empty");
+      numsEl.appendChild(span);
+    }
+    taWrap.classList.toggle("has-dupe", dupIdx.size > 0);
+    return dupIdx;
+  }
+
+  function initTabs(){
+    const btnReves = $("tabBtnReves"), btnDrive = $("tabBtnDrive");
+    const panelReves = $("tabReves"), panelDrive = $("tabDrive");
+    function switchTab(active){
+      const isReves = active === "reves";
+      btnReves.classList.toggle("is-active", isReves);
+      btnDrive.classList.toggle("is-active", !isReves);
+      btnReves.setAttribute("aria-selected", isReves ? "true":"false");
+      btnDrive.setAttribute("aria-selected", isReves ? "false":"true");
+      panelReves.classList.toggle("is-hidden", !isReves);
+      panelDrive.classList.toggle("is-hidden", isReves);
+      btnReves.tabIndex = isReves ? 0 : -1;
+      btnDrive.tabIndex = isReves ? -1 : 0;
+      return isReves ? btnReves : btnDrive;
+    }
+    // en pantallas táctiles no abrir el teclado solo al cambiar de pestaña
+    const FINE = window.matchMedia("(pointer: fine)").matches;
+    [["reves", btnReves], ["drive", btnDrive]].forEach(([side, btn]) => {
+      btn.addEventListener("click", () => {
+        switchTab(side);
+        if (FINE) setTimeout(() => $(side === "reves" ? "taReves" : "taDrive").focus(), 50);
+      });
+      btn.addEventListener("keydown", (e) => {
+        if (!["ArrowLeft","ArrowRight","Home","End"].includes(e.key)) return;
+        e.preventDefault();
+        const next = e.key === "Home" ? "reves" : e.key === "End" ? "drive" : side === "reves" ? "drive" : "reves";
+        switchTab(next).focus();
+      });
+    });
+    switchTab("reves");
+  }
+
+  function initTextareas(){
+    ["reves","drive"].forEach(side => {
+      const ta = $("ta" + (side === "reves" ? "Reves" : "Drive"));
+      ta.addEventListener("input", () => { syncHeight(ta); validate(); });
+      ta.addEventListener("keydown", (e) => {
+        if (e.key === "Enter"){
+          // bloquear Enter si ya hay suficientes jugadores
+          const filled = getNormed(side).filter(Boolean).length;
+          if (filled >= state.pairs){ e.preventDefault(); }
+        }
+      });
+      ta.addEventListener("paste", (e) => {
+        // dejar que el browser pegue, luego limpiar líneas extra
+        setTimeout(() => { syncHeight(ta); validate(); }, 0);
+      });
+    });
+  }
+
+  /* ---- validation ---- */
+  function validate(){
+    reqN.textContent = reqN2.textContent = state.pairs;
+    ["reves","drive"].forEach(side => {
+      const lines = getNormed(side);
+      const filled = lines.slice(0, state.pairs).filter(Boolean).length;
+      const dupIdx = renderNums(side);
+      sideMeta[side] = { filled, dup: dupIdx.size > 0 };
+      const el = side === "reves" ? countReves : countDrive;
+      const ok = filled === state.pairs && dupIdx.size === 0;
+      el.textContent = `${filled}/${state.pairs}`;
+      el.className = "tab-count " + (dupIdx.size ? "is-bad" : ok ? "is-ok" : "");
+    });
+    const ready = sideMeta.reves.filled === state.pairs && !sideMeta.reves.dup
+               && sideMeta.drive.filled === state.pairs && !sideMeta.drive.dup;
+    sortearBtn.disabled = !ready;
+    if (ready) errMsg.textContent = "";
+  }
+
+  /* ---- sorteo ---- */
+  sortearBtn.addEventListener("click", iniciarSorteo);
+
+  async function iniciarSorteo(){
+    const req = state.pairs;
+    const reves = getNormed("reves").filter(Boolean).slice(0, req);
+    const drive = getNormed("drive").filter(Boolean).slice(0, req);
+    if (reves.length < req || drive.length < req || sideMeta.reves.dup || sideMeta.drive.dup){
+      errMsg.textContent = `Completá los ${req} nombres de cada lado, sin repetidos.`;
+      return;
+    }
+    errMsg.textContent = "";
+    openOverlay("Sorteando…");
+    sortearBtn.disabled = true; ctaText.textContent = "Sorteando…"; ctaBall.classList.add("spin");
+
+    if (!REDUCED) await runAnimation();
+
+    const r = shuffle(reves.slice()), d = shuffle(drive.slice());
+    lastResult = r.map((x,i) => ({ no:i+1, reves:x, drive:d[i] }));
+
+    renderResults(lastResult);
+    boardTitle.textContent = "Parejas sorteadas";
+    if (!REDUCED) confetti();
+
+    ctaBall.classList.remove("spin");
+    ctaText.textContent = "Sortear parejas"; sortearBtn.disabled = false;
+  }
+
+  function runAnimation(){
+    boardBody.innerHTML =
+      `<div class="countdown"><div class="num" id="cd">3</div>
+       <div class="lbl">Armando parejas</div><div class="net"></div></div>`;
+    const cd = $("cd");
+    let n = 3;
+    const tick = setInterval(() => {
+      n--;
+      if (n >= 1){ cd.textContent = n; cd.style.animation="none"; void cd.offsetWidth; cd.style.animation=""; }
+      else { cd.textContent = "¡Ya!"; clearInterval(tick); }
+    }, 800);
+    return new Promise(res => setTimeout(res, 3200));
+  }
+
+  function renderResults(pairs){
+    const testFile = new File([""], "test.png", { type:"image/png" });
+    const canShareImg = !!(navigator.canShare && navigator.canShare({ files:[testFile] }));
+
+    boardBody.innerHTML = `<div class="pairs">
+      ${pairs.map((p,i) => `
+      <article class="pair" style="animation-delay:${i*40}ms">
+        <span class="pair__no">${String(p.no).padStart(2,"0")}</span>
+        <span class="pair__line">
+          <span class="pair__p pair__rv"><span class="pair__tag">Revés</span><span class="pair__name">${esc(p.reves)}</span></span>
+          <span class="pair__p pair__dr"><span class="pair__tag">Drive</span><span class="pair__name">${esc(p.drive)}</span></span>
+        </span>
+      </article>`).join("")}
+    </div>
+      <div class="actions">
+        <button class="btn" id="copyBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke-linecap="round"/></svg>
+          Copiar
+        </button>
+        ${canShareImg
+          ? `<button class="btn btn--share" id="shareBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke-linecap="round"/></svg>
+              Compartir imagen
+             </button>`
+          : `<button class="btn" id="pngBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round"/></svg>
+              Descargar PNG
+             </button>`}
+        <button class="btn btn--primary" id="reBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h5M20 20v-5h-5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 14a7 7 0 0 0 12 3M19 10A7 7 0 0 0 7 7" stroke-linecap="round"/></svg>
+          Volver a sortear
+        </button>
+      </div>`;
+    $("copyBtn").addEventListener("click", copyResults);
+    if (canShareImg) $("shareBtn").addEventListener("click", shareImage);
+    else $("pngBtn").addEventListener("click", exportPNG);
+    $("reBtn").addEventListener("click", () => { closeOverlay(); setTimeout(iniciarSorteo, 120); });
+  }
+
+  /* ---- copy ---- */
+  function copyResults(){
+    if (!lastResult) return;
+    const lines = ["Sorteo de parejas de pádel", ""];
+    lastResult.forEach(p => lines.push(`Pareja ${p.no}: ${p.reves} (revés) / ${p.drive} (drive)`));
+    navigator.clipboard?.writeText(lines.join("\n"))
+      .then(() => showToast("Copiado al portapapeles"))
+      .catch(() => showToast("No se pudo copiar"));
+  }
+
+  /* ---- canvas compartido ---- */
+  function buildCanvas(){
+    const S = 2, W = 1080, pad = 60, rowH = 70, headH = 210, footH = 80;
+    const H = headH + lastResult.length * rowH + footH;
+    const cv = document.createElement("canvas");
+    cv.width = W*S; cv.height = H*S;
+    const c = cv.getContext("2d"); c.scale(S,S);
+
+    const col = {
+      bg1:"#1A52A8", bg2:"#0D2454",
+      muted:"rgba(255,255,255,0.50)", text:"#FFFFFF",
+      ball:"#C8E600", reves:"#4ADE80", drive:"#FBBF24",
+      rowOdd:"rgba(255,255,255,0.04)", rowEven:"rgba(255,255,255,0.09)",
+      divider:"rgba(255,255,255,0.12)", border:"rgba(255,255,255,0.28)"
+    };
+
+    // fondo — gradiente igual que la web
+    const bg = c.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0, col.bg1); bg.addColorStop(1, col.bg2);
+    c.fillStyle = bg; c.fillRect(0,0,W,H);
+    // destello superior sutil
+    const glow = c.createRadialGradient(W/2,0,0,W/2,0,W*0.75);
+    glow.addColorStop(0,"rgba(255,255,255,0.07)"); glow.addColorStop(1,"rgba(255,255,255,0)");
+    c.fillStyle = glow; c.fillRect(0,0,W,H);
+
+    // borde exterior (como la web)
+    const rr = 20;
+    c.strokeStyle = "rgba(255,255,255,0.70)"; c.lineWidth = 3;
+    c.beginPath();
+    if (c.roundRect) c.roundRect(4,4,W-8,H-8,rr);
+    else c.rect(4,4,W-8,H-8);
+    c.stroke();
+
+    // header
+    c.textBaseline = "alphabetic";
+    c.fillStyle = col.text; c.font = "600 18px 'Chakra Petch', monospace";
+    c.fillText("● PÁDEL", pad, 72);
+    c.fillStyle = col.text; c.font = "700 52px 'Chakra Petch', sans-serif";
+    c.fillText("Sorteo de parejas", pad, 136);
+    // leyenda de colores con texto, no solo color
+    c.font = "700 18px 'Chakra Petch', monospace"; c.textAlign = "right";
+    c.fillStyle = col.drive; c.fillText("● DRIVE", W - pad, 170);
+    const dw = c.measureText("● DRIVE").width;
+    c.fillStyle = col.reves; c.fillText("● REVÉS", W - pad - dw - 24, 170);
+    c.textAlign = "left";
+    const d = new Date();
+    c.fillStyle = col.muted; c.font = "400 20px 'Sora', sans-serif";
+    c.fillText(d.toLocaleDateString("es-AR",{day:"2-digit",month:"long",year:"numeric"}), pad, 170);
+
+    // línea divisoria bajo header
+    c.strokeStyle = col.divider; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(pad, headH-10); c.lineTo(W-pad, headH-10); c.stroke();
+
+    // filas
+    const noW = 70, textX = pad + noW + 16;
+    const maxTxt = W - textX - pad - 20;
+
+    const measureAndClip = (txt, max, font) => {
+      c.font = font;
+      if (c.measureText(txt).width <= max) return txt;
+      while (txt.length > 1 && c.measureText(txt + "…").width > max) txt = txt.slice(0,-1);
+      return txt + "…";
+    };
+
+    // clip redondeado para que los fondos de fila no se salgan del borde
+    const tr2 = 12;
+    c.save();
+    c.beginPath();
+    if (c.roundRect) c.roundRect(pad, headH, W - pad*2, lastResult.length * rowH, tr2);
+    else c.rect(pad, headH, W - pad*2, lastResult.length * rowH);
+    c.clip();
+
+    lastResult.forEach((p, idx) => {
+      const ry = headH + idx * rowH;
+
+      // fondo alternado — full width dentro del borde
+      c.fillStyle = idx % 2 === 0 ? col.rowOdd : col.rowEven;
+      c.fillRect(pad, ry, W - pad*2, rowH);
+
+      // borde inferior
+      if (idx < lastResult.length - 1){
+        c.strokeStyle = col.divider; c.lineWidth = 1;
+        c.beginPath(); c.moveTo(pad, ry+rowH); c.lineTo(W-pad, ry+rowH); c.stroke();
+      }
+
+      const cy = ry + rowH/2 + 9; // baseline centrada verticalmente
+
+      // número
+      c.textAlign = "left"; c.fillStyle = col.muted;
+      c.font = "700 22px 'Chakra Petch', monospace";
+      c.fillText(String(p.no).padStart(2,"0"), pad+12, cy);
+
+      // medir el texto completo para hacer clip inteligente
+      const sepTxt = " / ";
+      const nameFont = "600 26px 'Sora', sans-serif";
+      const sepFont  = "400 26px 'Sora', sans-serif";
+
+      c.font = nameFont;
+      const rvFull = p.reves;
+      c.font = sepFont;
+      const sepW = c.measureText(sepTxt).width;
+      c.font = nameFont;
+      const drFull = p.drive;
+
+      // cada nombre tiene hasta la mitad del espacio disponible menos el sep
+      const halfMax = (maxTxt - sepW) / 2;
+      const rvText = measureAndClip(rvFull, halfMax, nameFont);
+      const drText = measureAndClip(drFull, halfMax, nameFont);
+
+      // dibujar Revés
+      c.font = nameFont; c.fillStyle = col.reves; c.textAlign = "left";
+      c.fillText(rvText, textX, cy);
+      const rvW = c.measureText(rvText).width;
+
+      // separador
+      c.font = sepFont; c.fillStyle = "rgba(255,255,255,0.35)";
+      c.fillText(sepTxt, textX + rvW, cy);
+
+      // Drive
+      c.font = nameFont; c.fillStyle = col.drive;
+      c.fillText(drText, textX + rvW + sepW, cy);
+    });
+
+    c.restore(); // fin del clip redondeado
+
+    // borde exterior de la tabla de filas con esquinas redondeadas
+    const tr = 12;
+    c.strokeStyle = col.border; c.lineWidth = 1.5;
+    c.beginPath();
+    if (c.roundRect) c.roundRect(pad, headH, W - pad*2, lastResult.length * rowH, tr);
+    else c.rect(pad, headH, W - pad*2, lastResult.length * rowH);
+    c.stroke();
+    // enmascarar esquinas de las filas con clip redondeado
+    // (ya pintadas antes del stroke, el borde las cubre limpiamente)
+
+    // footer
+    c.textAlign = "left"; c.fillStyle = col.muted;
+    c.font = "400 16px 'Chakra Petch', monospace";
+    c.fillText("Sorteo de parejas de pádel", pad, H - 30);
+
+    return { cv, date: d };
+  }
+
+  /* ---- export PNG ---- */
+  async function exportPNG(){
+    if (!lastResult) return;
+    await document.fonts.ready;
+    const { cv, date } = buildCanvas();
+    const a = document.createElement("a");
+    a.href = cv.toDataURL("image/png");
+    a.download = `parejas-padel-${date.toISOString().slice(0,10)}.png`;
+    a.click();
+    showToast("Imagen descargada");
+  }
+
+  /* ---- share image (Web Share API) ---- */
+  async function shareImage(){
+    if (!lastResult) return;
+    await document.fonts.ready;
+    const { cv, date } = buildCanvas();
+    cv.toBlob(async (blob) => {
+      const file = new File([blob], `parejas-padel-${date.toISOString().slice(0,10)}.png`, { type:"image/png" });
+      try {
+        await navigator.share({ files:[file], title:"Sorteo de parejas de pádel" });
+      } catch (e) {
+        if (e.name !== "AbortError") showToast("No se pudo compartir");
+      }
+    }, "image/png");
+  }
+
+  /* ---- confetti ---- */
+  function confetti(){
+    const colors = ["#C8E600","#22C55E","#F0A500","#FFFFFF","#A8C4EE"];
+    const frag = document.createDocumentFragment();
+    for (let i=0;i<60;i++){
+      const el = document.createElement("div");
+      el.className = "confetti";
+      el.style.background = colors[(Math.random()*colors.length)|0];
+      el.style.left = Math.random()*100 + "vw";
+      el.style.width = (Math.random()*5+4) + "px";
+      el.style.height = (Math.random()*8+5) + "px";
+      el.style.animationDuration = (Math.random()*1.4+2) + "s";
+      el.style.animationDelay = (Math.random()*0.4) + "s";
+      frag.appendChild(el);
+    }
+    confettiBox.innerHTML = ""; confettiBox.appendChild(frag);
+    setTimeout(() => confettiBox.innerHTML = "", 3400);
+  }
+
+  /* ---- overlay ---- */
+  const mainEl = document.querySelector("main");
+  let lastFocus = null;
+  function openOverlay(title){
+    boardTitle.textContent = title;
+    if (!overlay.classList.contains("open")) lastFocus = document.activeElement;
+    overlay.classList.add("open"); document.body.style.overflow="hidden";
+    mainEl.inert = true;
+    closeBtn.focus();
+  }
+  function closeOverlay(){
+    overlay.classList.remove("open"); document.body.style.overflow=""; boardBody.innerHTML=""; confettiBox.innerHTML="";
+    mainEl.inert = false;
+    if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
+  }
+  overlay.addEventListener("keydown", (e) => {
+    if (e.key !== "Tab") return;
+    const f = [...overlay.querySelectorAll("button:not([disabled])")];
+    if (!f.length) return;
+    const first = f[0], last = f[f.length-1];
+    if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  });
+  closeBtn.addEventListener("click", closeOverlay);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) closeOverlay(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && overlay.classList.contains("open")) closeOverlay(); });
+
+  let toastT;
+  function showToast(msg){ toast.textContent = msg; toast.classList.add("show");
+    clearTimeout(toastT); toastT = setTimeout(() => toast.classList.remove("show"), 1900); }
+
+  /* ---- init ---- */
+  initTabs();
+  initTextareas();
+  validate();
+});
+</script>
+</body>
+</html>
