@@ -8,8 +8,13 @@ Aplicación web para sorteo de parejas de pádel
 ## Características
 
 - Interfaz simple basada en HTML/JavaScript.
-- Generación aleatoria de parejas.
+- Cada pareja une un jugador de revés con uno de drive, al azar.
+- De 2 a 16 parejas; el resultado sale agrupado por cancha (con cantidad impar, una pareja espera turno).
+- Avisa líneas vacías, nombres de más, repetidos o el mismo nombre en revés y drive.
+- Guarda los nombres en el navegador; volver a sortear evita repetir las parejas anteriores.
+- Copiar el resultado, compartirlo como imagen o descargarlo en PNG.
 - Pensada para uso rápido en móviles y ordenadores (abrir `index.html`).
+- `comparar.html` muestra la versión anterior (`version-anterior.html`) junto a la actual.
 
 ## Cómo usar
 
@@ -22,7 +27,7 @@ Aplicación web para sorteo de parejas de pádel
 		 # luego abrir http://localhost:8000
 		 ```
 
-2. Añadir los participantes usando los controles de la página.
+2. Elegir cuántas parejas y escribir los jugadores de revés y de drive, uno por línea.
 3. Pulsar el botón para generar el sorteo y obtener las parejas.
 
 Si quieres que incluya un ejemplo visual o capturas de pantalla, dímelo y las agregaré.
