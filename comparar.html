@@ -83,7 +83,7 @@
 <main class="wrap">
   <p class="eyebrow">Sorteo de parejas de pádel</p>
   <h1>Antes y <span>después</span></h1>
-  <p class="lead">A la izquierda está la versión publicada hoy (<code>index.html</code>) y a la derecha la versión con las mejoras visuales (<code>index-v2.html</code>). Las dos funcionan: podés escribir nombres y sortear en cada una.</p>
+  <p class="lead">A la izquierda está la versión publicada hoy (<code>index.html</code>) y a la derecha la versión con todas las mejoras de la revisión (<code>index-v2.html</code>). Las dos funcionan: podés escribir nombres y sortear en cada una.</p>
 
   <section aria-labelledby="t-vivo">
     <h2 id="t-vivo">Probalas en vivo</h2>
@@ -104,13 +104,13 @@
       </div>
       <div class="phone phone--new">
         <div class="phone__label"><span class="tag tag--new">Después</span><a href="index-v2.html" target="_blank" rel="noopener">Abrir sola</a></div>
-        <iframe id="frameNew" src="index-v2.html" title="Versión con mejoras visuales"></iframe>
+        <iframe id="frameNew" src="index-v2.html" title="Versión con mejoras"></iframe>
       </div>
     </div>
   </section>
 
   <section aria-labelledby="t-cambios">
-    <h2 id="t-cambios">Qué cambió</h2>
+    <h2 id="t-cambios">Cambios visuales</h2>
     <div class="changes">
       <div class="change change--head"><span>Dónde</span><span>Antes</span><span>Después</span></div>
       <div class="change"><span class="area">Contraste · 21</span><p class="old">Textos de ayuda, pestaña inactiva y placeholder al 30-40 % de blanco. Se leen mal al sol.</p><p>Todos los textos secundarios suben a 55-78 % y la ayuda pasa de 11 a 12 px.</p></div>
@@ -125,7 +125,24 @@
       <div class="change"><span class="area">Imagen PNG · 12 y 25</span><p class="old">Puede dibujarse antes de que carguen las fuentes. Sin leyenda de colores.</p><p>Espera a las fuentes, usa los colores nuevos y agrega la leyenda REVÉS / DRIVE.</p></div>
       <div class="change"><span class="area">Textos · 13</span><p class="old">La descripción dice "equilibrado". Al copiar se usa × y en pantalla /.</p><p>La descripción dice "al azar" y el texto copiado usa / como en pantalla.</p></div>
     </div>
-    <p class="pending" style="margin-top:14px">Los números son los de la revisión de código. Esta versión cambia solo lo visual: los defectos de validación (puntos 1, 2, 3 y 5) y las mejoras funcionales (14 a 20) siguen igual que antes.</p>
+    <h2 style="margin-top:28px">Errores corregidos y funciones nuevas</h2>
+    <div class="changes">
+      <div class="change change--head"><span>Dónde</span><span>Antes</span><span>Después</span></div>
+      <div class="change"><span class="area">Líneas vacías · 1</span><p class="old">Una línea vacía entre dos nombres bloquea el botón de sortear.</p><p>Las líneas vacías no cuentan y la numeración las saltea.</p></div>
+      <div class="change"><span class="area">Nombres de más · 2 y 3</span><p class="old">Los que sobran se ignoran sin aviso, y un repetido entre ellos bloquea sin decir cuál es.</p><p>Todos los nombres llevan número. Los que sobran se marcan en rojo y abajo dice cuántos sobran.</p></div>
+      <div class="change"><span class="area">Mismo nombre en los dos lados · 5</span><p class="old">"Ana" en revés y en drive se sortea igual.</p><p>Se marca en rojo y abajo dice "Ana está en revés y en drive".</p></div>
+      <div class="change"><span class="area">Avisos · 20</span><p class="old">Solo el contador se pone rojo, a veces en la pestaña que no estás viendo.</p><p>Debajo del botón aparece cada problema con el nombre y qué hacer, y cuántos nombres faltan.</p></div>
+      <div class="change"><span class="area">Partidos · 14</span><p class="old">Lista de parejas, los cruces se arman a mano.</p><p>Resultado agrupado por cancha (Pareja 1 vs Pareja 2). Con cantidad impar, la última pareja espera turno. También en el texto copiado y en la imagen.</p></div>
+      <div class="change"><span class="area">Nombres guardados · 15</span><p class="old">Al recargar la página se pierde todo.</p><p>Los nombres y la cantidad de parejas quedan guardados en el navegador.</p></div>
+      <div class="change"><span class="area">Volver a sortear · 16 y 18</span><p class="old">Cierra y abre la ventana, y puede repetir las mismas parejas.</p><p>Sortea de nuevo en la misma ventana y evita repetir las parejas del sorteo anterior.</p></div>
+      <div class="change"><span class="area">Cantidad de parejas · 17</span><p class="old">Solo pares: 2, 4, 6… 16.</p><p>Cualquier número de 2 a 16.</p></div>
+      <div class="change"><span class="area">Listas · 19</span><p class="old">Para empezar de nuevo hay que borrar a mano.</p><p>Botones para intercambiar las listas de revés y drive, y para borrar la lista (pide un segundo toque para confirmar).</p></div>
+      <div class="change"><span class="area">Cerrar durante la cuenta · 7</span><p class="old">El confeti cae igual después de cerrar.</p><p>Cerrar cancela el sorteo.</p></div>
+      <div class="change"><span class="area">Fecha del PNG · 8</span><p class="old">Después de las 21 h el archivo sale con la fecha de mañana.</p><p>Usa la fecha local.</p></div>
+      <div class="change"><span class="area">Compartir en iPhone · 9</span><p class="old">La imagen se arma al tocar el botón y Safari puede rechazar el pedido.</p><p>La imagen se prepara apenas aparece el resultado, así compartir sale en el mismo toque.</p></div>
+      <div class="change"><span class="area">Copiar · 10</span><p class="old">Si el navegador no deja usar el portapapeles, no pasa nada.</p><p>Prueba otra forma de copiar y, si tampoco puede, avisa.</p></div>
+    </div>
+    <p class="pending" style="margin-top:14px">Los números son los de la revisión de código. Quedó afuera el punto 27 (usarla sin internet como app), porque necesita archivos aparte y conviene hacerlo cuando la versión nueva reemplace a la actual.</p>
   </section>
 
   <section aria-labelledby="t-capturas">
@@ -135,6 +152,11 @@
         <h3>Cargando jugadores, con un nombre largo</h3>
         <figure><img src="comparacion/antes-jugadores.png" alt="Antes: lista de jugadores" loading="lazy" /><figcaption class="old">Antes</figcaption></figure>
         <figure><img src="comparacion/despues-jugadores.png" alt="Después: lista de jugadores" loading="lazy" /><figcaption>Después</figcaption></figure>
+      </div>
+      <div class="shot">
+        <h3>Errores en la lista: una línea vacía, un nombre de más y "Caro" en los dos lados</h3>
+        <figure><img src="comparacion/antes-errores.png" alt="Antes: lista con errores" loading="lazy" /><figcaption class="old">Antes</figcaption></figure>
+        <figure><img src="comparacion/despues-errores.png" alt="Después: lista con errores marcados" loading="lazy" /><figcaption>Después</figcaption></figure>
       </div>
       <div class="shot">
         <h3>Resultado del sorteo</h3>
