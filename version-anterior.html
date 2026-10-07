@@ -4,23 +4,16 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Sorteo de Parejas de Pádel</title>
-<meta name="description" content="Sorteá las parejas de tu partido de pádel: un jugador de revés con uno de drive, al azar." />
-<meta name="theme-color" content="#0D2454" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230D2454'/%3E%3Ccircle cx='32' cy='32' r='19' fill='%23C8E600'/%3E%3Cpath d='M17 24c9 4 21 4 30 0M17 40c9-4 21-4 30 0' fill='none' stroke='%230D2454' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" />
-<meta property="og:type" content="website" />
-<meta property="og:title" content="Sorteo de Parejas de Pádel" />
-<meta property="og:description" content="Cargá los jugadores de revés y de drive y sorteá las parejas al azar." />
-<meta property="og:url" content="https://danielferrochio.github.io/sorteoparejaspadel/" />
-<meta name="twitter:card" content="summary" />
+<meta name="description" content="Sorteá las parejas de tu partido de pádel. Drive y revés, equilibrado y al azar." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   :root{
     --bg:#0D2454; --bg2:#0F3880; --surface:#1A52A8; --surface2:#1348A0;
     --line:rgba(255,255,255,0.20); --line2:rgba(255,255,255,0.12);
-    --court:#FFFFFF; --ball:#C8E600; --drive:#FBBF24; --reves:#4ADE80;
-    --text:#FFFFFF; --muted:rgba(255,255,255,0.78); --danger:#FF6B6B; --ok:#86EFAC;
+    --court:#FFFFFF; --ball:#C8E600; --drive:#F0A500; --reves:#22C55E;
+    --text:#FFFFFF; --muted:rgba(255,255,255,0.60); --danger:#FF6B6B; --ok:#86EFAC;
     --r:14px; --r-lg:22px;
     --maxw:920px;
   }
@@ -28,7 +21,7 @@
   html{-webkit-text-size-adjust:100%}
   body{
     margin:0; min-height:100vh; color:var(--text); line-height:1.55;
-    font-family:'Sora',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    font-family:'Sora',system-ui,-apple-system,sans-serif;
     background:
       radial-gradient(900px 400px at 50% -80px, rgba(255,255,255,.08), transparent 60%),
       linear-gradient(180deg, #1A52A8 0%, #0D2454 100%);
@@ -92,20 +85,20 @@
   .tab-btn{flex:1; display:flex; align-items:center; justify-content:center; gap:8px;
     padding:11px 8px; background:transparent; border:0; border-bottom:2px solid transparent;
     margin-bottom:-1px; cursor:pointer; font-family:'Chakra Petch',sans-serif; font-weight:700;
-    font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,0.72);
+    font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,0.40);
     transition:color .15s, border-color .15s, background .15s}
-  .tab-btn .pip{width:8px; height:8px; border-radius:50%; flex-shrink:0; opacity:.7; transition:opacity .15s}
+  .tab-btn .pip{width:8px; height:8px; border-radius:50%; flex-shrink:0; opacity:.5; transition:opacity .15s}
   .tab-btn--reves .pip{background:var(--reves); box-shadow:0 0 8px var(--reves)}
   .tab-btn--drive .pip{background:var(--drive); box-shadow:0 0 8px var(--drive)}
-  .tab-btn--reves.is-active{color:var(--reves); border-bottom-color:var(--reves); background:rgba(74,222,128,0.08)}
-  .tab-btn--drive.is-active{color:var(--drive); border-bottom-color:var(--drive); background:rgba(251,191,36,0.08)}
+  .tab-btn--reves.is-active{color:var(--reves); border-bottom-color:var(--reves); background:rgba(34,197,94,0.06)}
+  .tab-btn--drive.is-active{color:var(--drive); border-bottom-color:var(--drive); background:rgba(240,165,0,0.06)}
   .tab-btn.is-active .pip{opacity:1}
   .tab-count{font-family:'Chakra Petch',monospace; font-size:11px; font-weight:700;
     padding:3px 8px; border-radius:999px; white-space:nowrap; transition:color .15s, border-color .15s, background .15s}
-  .tab-btn--reves .tab-count{color:var(--reves); background:rgba(74,222,128,0.10); border:1px solid rgba(74,222,128,0.30)}
-  .tab-btn--drive .tab-count{color:var(--drive); background:rgba(251,191,36,0.10); border:1px solid rgba(251,191,36,0.30)}
-  .tab-btn--reves.is-active .tab-count{color:var(--reves); background:rgba(74,222,128,0.16); border-color:rgba(74,222,128,0.50)}
-  .tab-btn--drive.is-active .tab-count{color:var(--drive); background:rgba(251,191,36,0.16); border-color:rgba(251,191,36,0.50)}
+  .tab-btn--reves .tab-count{color:rgba(34,197,94,0.6); background:rgba(34,197,94,0.10); border:1px solid rgba(34,197,94,0.20)}
+  .tab-btn--drive .tab-count{color:rgba(240,165,0,0.6); background:rgba(240,165,0,0.10); border:1px solid rgba(240,165,0,0.20)}
+  .tab-btn--reves.is-active .tab-count{color:var(--reves); background:rgba(34,197,94,0.15); border-color:rgba(34,197,94,0.40)}
+  .tab-btn--drive.is-active .tab-count{color:var(--drive); background:rgba(240,165,0,0.15); border-color:rgba(240,165,0,0.40)}
   .tab-count.is-ok{color:var(--ok) !important; background:rgba(134,239,172,0.12) !important; border-color:rgba(134,239,172,0.35) !important}
   .tab-count.is-bad{color:var(--danger) !important; background:rgba(255,107,107,0.10) !important; border-color:rgba(255,107,107,0.30) !important}
   .side{position:relative}
@@ -130,16 +123,15 @@
     text-align:center; height:var(--ta-lh); line-height:var(--ta-lh); padding:0 6px; display:block}
   .side--reves .ta-num.filled{color:var(--reves)}
   .side--drive .ta-num.filled{color:var(--drive)}
-  .ta-num.empty{color:rgba(255,255,255,0.45)}
+  .ta-num.empty{color:rgba(255,255,255,0.22)}
   .ta-num.dupe{color:var(--danger)}
-  .ta-num.extra{color:var(--danger); opacity:.75; text-decoration:line-through}
   .ta-field{flex:1; padding:var(--ta-pt) 12px; background:transparent; border:0; outline:0;
     color:var(--text); font-family:inherit; font-size:var(--ta-fs); line-height:var(--ta-lh);
-    resize:none; overflow-y:hidden; overflow-x:auto; white-space:pre; min-height:calc(var(--ta-lh) + var(--ta-pt)*2)}
+    resize:none; overflow:hidden; min-height:calc(var(--ta-lh) + var(--ta-pt)*2)}
   .ta-field:focus{outline:0}
   .ta-field:focus-visible{outline:0}
-  .ta-field::placeholder{color:rgba(255,255,255,0.55)}
-  .hint{margin:9px 2px 0; font-size:12px; color:rgba(255,255,255,0.72)}
+  .ta-field::placeholder{color:rgba(255,255,255,0.30)}
+  .hint{margin:9px 2px 0; font-size:11px; color:rgba(255,255,255,0.40)}
 
   /* ---------- CTA ---------- */
   .cta-row{margin-top:22px; text-align:center}
@@ -157,26 +149,13 @@
   .cta .ball{width:18px; height:18px; border-radius:50%; background:#0a1206; position:relative}
   .cta .ball::after{content:""; position:absolute; inset:3px 7px auto 3px; height:2px; border-radius:2px;
     background:var(--ball); transform:rotate(28deg)}
-  .err{margin:14px auto 0; max-width:48ch; color:var(--danger); font-size:13.5px; font-weight:500; min-height:18px;
-    display:flex; flex-direction:column; gap:4px}
-  .err__line--soft{color:var(--muted); font-weight:400}
-
-  /* ---------- herramientas de listas ---------- */
-  .tools{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
-  .tool{appearance:none; cursor:pointer; display:inline-flex; align-items:center; gap:7px;
-    padding:9px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.25); background:rgba(255,255,255,0.06);
-    color:var(--text); font:600 13px 'Sora',system-ui,sans-serif; transition:background .15s, border-color .15s}
-  .tool:hover{background:rgba(255,255,255,0.14)}
-  .tool svg{width:15px; height:15px}
-  .tool--danger{margin-left:auto}
-  .tool--danger.is-armed{color:var(--danger); border-color:var(--danger); background:rgba(255,107,107,0.10)}
-  .hint--saved{margin-top:10px}
+  .err{margin:14px 0 0; color:var(--danger); font-size:13.5px; font-weight:500; min-height:18px}
 
   /* ---------- Overlay / results ---------- */
   .overlay{position:fixed; inset:0; z-index:60; display:none; place-items:center;
     padding:18px; background:rgba(4,7,14,.82); backdrop-filter:blur(7px)}
   .overlay.open{display:grid}
-  .board{width:100%; max-width:640px; max-height:92vh; max-height:92dvh; overflow:auto;
+  .board{width:100%; max-width:640px; max-height:92vh; overflow:auto;
     border:1px solid var(--line2); border-radius:var(--r-lg);
     background:linear-gradient(180deg,#1A52A8,#0D2454); box-shadow:0 40px 120px -30px #000;
     animation:rise .35s cubic-bezier(.2,.7,.3,1)}
@@ -185,8 +164,8 @@
     border-bottom:1px solid rgba(255,255,255,0.18); background:linear-gradient(180deg,#1A52A8,rgba(26,82,168,.6))}
   .board__title{font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:17px;
     letter-spacing:.04em; text-transform:uppercase}
-  .iconbtn{appearance:none; cursor:pointer; width:40px; height:40px; border-radius:10px;
-    border:1px solid rgba(255,255,255,0.30); background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.85);
+  .iconbtn{appearance:none; cursor:pointer; width:34px; height:34px; border-radius:10px;
+    border:1px solid rgba(255,255,255,0.22); background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.6);
     display:grid; place-items:center; transition:color .15s, border-color .15s, background .15s}
   .iconbtn:hover{color:#fff; background:rgba(255,255,255,0.15)}
   .board__body{padding:18px 20px}
@@ -202,28 +181,17 @@
 
   /* ---- lista de parejas sorteadas ---- */
   .pairs{display:grid; gap:0; border:1px solid rgba(255,255,255,0.25); border-radius:var(--r); overflow:hidden}
-  .pair{display:flex; align-items:flex-start; gap:12px;
-    padding:12px 14px; border-bottom:1px solid rgba(255,255,255,0.10);
+  .pair{display:flex; align-items:center; gap:12px;
+    padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.10);
     background:rgba(255,255,255,0.04); animation:rise .35s ease backwards}
   .pair:last-child{border-bottom:0}
-  .courts{display:grid; gap:16px}
-  .court__head{margin:0 0 8px 2px; font-family:'Chakra Petch',monospace; font-weight:700; font-size:12px;
-    letter-spacing:.22em; text-transform:uppercase; color:var(--ball)}
-  .court--bye .court__head{color:var(--muted)}
-  .vs{padding:3px 0; text-align:center; font-family:'Chakra Petch',monospace; font-weight:700; font-size:11px;
-    letter-spacing:.3em; text-transform:uppercase; color:var(--muted); background:rgba(0,0,0,0.18);
-    border-bottom:1px solid rgba(255,255,255,0.10)}
+  .pair:nth-child(odd){background:rgba(255,255,255,0.07)}
   .pair__no{font-family:'Chakra Petch',monospace; font-weight:700; font-size:13px;
-    color:var(--muted); min-width:24px; flex-shrink:0; padding-top:15px; font-variant-numeric:tabular-nums}
-  .pair__line{flex:1; min-width:0; display:grid; grid-template-columns:1fr 1fr; gap:12px}
-  .pair__p{min-width:0; display:flex; flex-direction:column; gap:2px}
-  .pair__tag{font-family:'Chakra Petch',monospace; font-weight:700; font-size:10px;
-    letter-spacing:.18em; text-transform:uppercase; color:var(--muted)}
-  .pair__tag::before{content:""; display:inline-block; width:7px; height:7px; border-radius:50%;
-    margin-right:6px; vertical-align:1px; background:currentColor}
-  .pair__name{font-size:15px; font-weight:600; line-height:1.3; overflow-wrap:anywhere}
-  .pair__rv .pair__tag::before, .pair__rv .pair__name{color:var(--reves)}
-  .pair__dr .pair__tag::before, .pair__dr .pair__name{color:var(--drive)}
+    color:var(--muted); min-width:24px; flex-shrink:0}
+  .pair__line{font-size:14px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .pair__rv{color:var(--reves)}
+  .pair__sep{color:rgba(255,255,255,0.40); margin:0 6px}
+  .pair__dr{color:var(--drive)}
 
   .actions{display:flex; flex-wrap:wrap; gap:9px; margin-top:18px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.18)}
   .btn{appearance:none; cursor:pointer; flex:1 1 140px; display:inline-flex; align-items:center;
@@ -242,8 +210,8 @@
   #confetti{position:fixed; inset:0; pointer-events:none; z-index:80}
   .confetti{position:absolute; width:8px; height:13px; opacity:0; will-change:transform; animation:fall 2.8s ease-in forwards}
 
-  footer{text-align:center; margin-top:24px; color:rgba(255,255,255,0.65); font-size:12px}
-  footer .wm{font-family:'Chakra Petch',monospace; letter-spacing:.2em; color:rgba(255,255,255,0.80)}
+  footer{text-align:center; margin-top:24px; color:rgba(255,255,255,0.38); font-size:12px}
+  footer .wm{font-family:'Chakra Petch',monospace; letter-spacing:.2em; color:rgba(255,255,255,0.50)}
 
   .toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px);
     z-index:90; padding:11px 18px; border-radius:999px; font-size:13.5px; font-weight:600;
@@ -302,7 +270,7 @@
       <div class="ta-wrap" data-side="reves">
         <div class="ta-nums" id="numsReves"></div>
         <textarea class="ta-field" id="taReves" data-side="reves"
-          placeholder="Un nombre por línea…" aria-label="Jugadores de revés" rows="2" wrap="off" spellcheck="false"></textarea>
+          placeholder="Un nombre por línea…" aria-label="Jugadores de revés" rows="2" spellcheck="false"></textarea>
       </div>
       <p class="hint">Un nombre por línea · podés pegar una lista</p>
     </div>
@@ -311,26 +279,17 @@
       <div class="ta-wrap" data-side="drive">
         <div class="ta-nums" id="numsDrive"></div>
         <textarea class="ta-field" id="taDrive" data-side="drive"
-          placeholder="Un nombre por línea…" aria-label="Jugadores de drive" rows="2" wrap="off" spellcheck="false"></textarea>
+          placeholder="Un nombre por línea…" aria-label="Jugadores de drive" rows="2" spellcheck="false"></textarea>
       </div>
       <p class="hint">Un nombre por línea · podés pegar una lista</p>
     </div>
-
-    <div class="tools">
-      <button class="tool" id="swapBtn" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Intercambiar listas
-      </button>
-      <button class="tool tool--danger" id="clearBtn" type="button">Borrar lista</button>
-    </div>
-    <p class="hint hint--saved">Los nombres quedan guardados en este navegador para la próxima.</p>
 
     <div class="cta-row">
       <button class="cta" id="sortearBtn" disabled>
         <span class="ball" id="ctaBall"></span>
         <span id="ctaText">Sortear parejas</span>
       </button>
-      <p class="err" id="errMsg" aria-live="polite"></p>
+      <p class="err" id="errMsg" role="alert"></p>
     </div>
   </section>
 
@@ -356,264 +315,169 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   "use strict";
-  const OPTIONS = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16];
+  const OPTIONS = [2,4,6,8,10,12,14,16];
   const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const STORE_KEY = "sorteo-parejas-padel";
-  const SIDE_LABEL = { reves:"revés", drive:"drive" };
 
-  const state = { pairs: 2, tab: "reves" };
+  const state = { pairs: 2, reves: [], drive: [] };
+  const sideMeta = { reves:{filled:0,dup:false}, drive:{filled:0,dup:false} };
   let lastResult = null;
-  let lastAnalysis = null;
-  let drawId = 0;
-  let shareFile = null;
 
   const $ = (id) => document.getElementById(id);
   const segWrap = $("segParejas");
   const reqN = $("reqN"), reqN2 = $("reqN2");
-  const countEl = { reves: $("countReves"), drive: $("countDrive") };
-  const taEl = { reves: $("taReves"), drive: $("taDrive") };
+  const countReves = $("countReves"), countDrive = $("countDrive");
   const sortearBtn = $("sortearBtn"), ctaText = $("ctaText"), ctaBall = $("ctaBall"), errMsg = $("errMsg");
   const overlay = $("overlay"), boardBody = $("boardBody"), boardTitle = $("boardTitle"), closeBtn = $("closeBtn");
   const confettiBox = $("confetti"), toast = $("toast");
 
   const esc = (s) => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const norm = (s) => (s||"").replace(/\s+/g," ").trim();
-  const keyOf = (s) => norm(s).toLocaleLowerCase("es");
-  const pad2 = (n) => String(n).padStart(2,"0");
   const shuffle = (a) => { for (let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]];} return a; };
-  const localDate = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-
-  /* ---- nombres guardados en el navegador ---- */
-  function loadSaved(){
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
-      if (!saved) return;
-      if (OPTIONS.includes(saved.pairs)) state.pairs = saved.pairs;
-      if (typeof saved.reves === "string") taEl.reves.value = saved.reves;
-      if (typeof saved.drive === "string") taEl.drive.value = saved.drive;
-    } catch (e) { /* sin almacenamiento: se empieza vacío */ }
-  }
-  function save(){
-    try {
-      localStorage.setItem(STORE_KEY, JSON.stringify({ pairs: state.pairs, reves: taEl.reves.value, drive: taEl.drive.value }));
-    } catch (e) { /* modo privado o almacenamiento bloqueado */ }
-  }
 
   /* ---- count selector ---- */
-  function renderSegments(){
-    OPTIONS.forEach(n => {
-      const b = document.createElement("button");
-      b.className = "seg"; b.type = "button"; b.dataset.n = n;
-      b.innerHTML = `${n}<small>${n*2} jug.</small>`;
-      b.addEventListener("click", () => { state.pairs = n; save(); validate(); });
-      segWrap.appendChild(b);
+  OPTIONS.forEach(n => {
+    const b = document.createElement("button");
+    b.className = "seg"; b.type = "button"; b.dataset.n = n;
+    b.setAttribute("aria-pressed", n === state.pairs ? "true" : "false");
+    b.innerHTML = `${n}<small>${n*2} jug.</small>`;
+    b.addEventListener("click", () => {
+      state.pairs = n;
+      [...segWrap.children].forEach(c => c.setAttribute("aria-pressed", c.dataset.n == n ? "true":"false"));
+      validate();
     });
-  }
+    segWrap.appendChild(b);
+  });
 
   /* ---- textarea logic ---- */
   const LH = 22;   // px — debe coincidir con --ta-lh
   const PT = 10;   // px — debe coincidir con --ta-pt
+
+  function getLines(side){
+    const ta = $("ta" + (side === "reves" ? "Reves" : "Drive"));
+    // NO aplicar norm aquí para no perder líneas vacías intermedias
+    return ta.value.split("\n");
+  }
+
+  function getNormed(side){
+    return getLines(side).map(norm);
+  }
 
   function syncHeight(ta){
     ta.style.height = "0";
     ta.style.height = Math.max(ta.scrollHeight, LH + PT * 2) + "px";
   }
 
-  // Lee las dos listas y detecta todos los problemas de una vez
-  function analyze(){
-    const req = state.pairs;
-    const sides = {};
-    ["reves","drive"].forEach(side => {
-      const lines = taEl[side].value.split("\n").map(norm);
-      const names = lines.filter(Boolean);
-      const count = {}, first = {};
-      names.forEach(v => { const k = keyOf(v); count[k] = (count[k]||0) + 1; if (!(k in first)) first[k] = v; });
-      sides[side] = { lines, names, count, first };
-    });
-    const both = new Set(Object.keys(sides.reves.count).filter(k => sides.drive.count[k]));
-    const errors = [], missing = [];
-    ["reves","drive"].forEach(side => {
-      const s = sides[side];
-      s.dupes = new Set(Object.keys(s.count).filter(k => s.count[k] > 1));
-      s.dupes.forEach(k => errors.push(`“${esc(s.first[k])}” está repetido en ${SIDE_LABEL[side]}.`));
-      s.extra = Math.max(0, s.names.length - req);
-      if (s.extra){
-        const n = s.extra;
-        errors.push(n === 1
-          ? `Sobra 1 nombre en ${SIDE_LABEL[side]}. Borrá el que no juega o elegí más parejas.`
-          : `Sobran ${n} nombres en ${SIDE_LABEL[side]}. Borrá los que no juegan o elegí más parejas.`);
-      }
-      const falta = req - s.names.length;
-      if (falta > 0) missing.push(`${falta} de ${SIDE_LABEL[side]}`);
-      s.ok = s.names.length === req && s.dupes.size === 0 && ![...Object.keys(s.count)].some(k => both.has(k));
-    });
-    both.forEach(k => errors.push(`“${esc(sides.reves.first[k])}” está en revés y en drive.`));
-    const ready = errors.length === 0 && missing.length === 0;
-    return { sides, both, errors, missing, ready, req };
-  }
-
-  // Un número por cada nombre (las líneas vacías del medio no cuentan) y los lugares que faltan
-  function renderNums(side, a){
+  function renderNums(side){
     const numsEl = $(side === "reves" ? "numsReves" : "numsDrive");
     const taWrap = document.querySelector(`.ta-wrap[data-side="${side}"]`);
-    const s = a.sides[side];
-    let lastFilled = -1;
-    s.lines.forEach((v,i) => { if (v) lastFilled = i; });
-    let n = 0, bad = false;
-    const frag = document.createDocumentFragment();
-    const add = (text, cls) => {
-      const span = document.createElement("span");
-      span.className = "ta-num " + cls;
-      span.textContent = text;
-      frag.appendChild(span);
-    };
-    s.lines.forEach((v,i) => {
-      if (v){
-        n++;
-        const k = keyOf(v);
-        if (s.dupes.has(k) || a.both.has(k)){ add(pad2(n), "dupe"); bad = true; }
-        else if (n > a.req){ add(pad2(n), "extra"); bad = true; }
-        else add(pad2(n), "filled");
-      } else if (i < lastFilled){
-        add("", "gap");
-      } else {
-        n++;
-        add(n <= a.req ? pad2(n) : "", "empty");
-      }
+    const lines = getNormed(side);   // normalizado para lógica
+    const req = state.pairs;
+
+    // detectar dupes solo entre líneas con contenido
+    const seen = {}, dupIdx = new Set();
+    lines.forEach((v,i) => {
+      if (!v) return;
+      const k = v.toLowerCase();
+      if (seen[k] != null){ dupIdx.add(i); dupIdx.add(seen[k]); } else seen[k] = i;
     });
-    for (n++; n <= a.req; n++) add(pad2(n), "empty");
-    numsEl.replaceChildren(frag);
-    taWrap.classList.toggle("has-dupe", bad);
+
+    // renderizar exactamente req números
+    numsEl.innerHTML = "";
+    for (let i = 0; i < req; i++){
+      const span = document.createElement("span");
+      span.className = "ta-num";
+      span.textContent = String(i+1).padStart(2,"0");
+      const val = lines[i];
+      if (dupIdx.has(i)) span.classList.add("dupe");
+      else if (val) span.classList.add("filled");
+      else span.classList.add("empty");
+      numsEl.appendChild(span);
+    }
+    taWrap.classList.toggle("has-dupe", dupIdx.size > 0);
+    return dupIdx;
   }
 
-  /* ---- tabs ---- */
   function initTabs(){
     const btnReves = $("tabBtnReves"), btnDrive = $("tabBtnDrive");
     const panelReves = $("tabReves"), panelDrive = $("tabDrive");
     function switchTab(active){
       const isReves = active === "reves";
-      state.tab = active;
       btnReves.classList.toggle("is-active", isReves);
       btnDrive.classList.toggle("is-active", !isReves);
       btnReves.setAttribute("aria-selected", isReves ? "true":"false");
       btnDrive.setAttribute("aria-selected", isReves ? "false":"true");
       panelReves.classList.toggle("is-hidden", !isReves);
       panelDrive.classList.toggle("is-hidden", isReves);
-      btnReves.tabIndex = isReves ? 0 : -1;
-      btnDrive.tabIndex = isReves ? -1 : 0;
-      syncHeight(taEl[active]);
-      resetClear();
-      return isReves ? btnReves : btnDrive;
+      // foco al textarea de la pestaña activa
+      setTimeout(() => $(isReves ? "taReves" : "taDrive").focus(), 50);
     }
-    // en pantallas táctiles no abrir el teclado solo al cambiar de pestaña
-    const FINE = window.matchMedia("(pointer: fine)").matches;
-    [["reves", btnReves], ["drive", btnDrive]].forEach(([side, btn]) => {
-      btn.addEventListener("click", () => {
-        switchTab(side);
-        if (FINE) setTimeout(() => taEl[side].focus(), 50);
-      });
-      btn.addEventListener("keydown", (e) => {
-        if (!["ArrowLeft","ArrowRight","Home","End"].includes(e.key)) return;
-        e.preventDefault();
-        const next = e.key === "Home" ? "reves" : e.key === "End" ? "drive" : side === "reves" ? "drive" : "reves";
-        switchTab(next).focus();
-      });
-    });
-    switchTab("reves");
+    btnReves.addEventListener("click", () => switchTab("reves"));
+    btnDrive.addEventListener("click", () => switchTab("drive"));
   }
 
   function initTextareas(){
     ["reves","drive"].forEach(side => {
-      const ta = taEl[side];
-      ta.addEventListener("input", () => { syncHeight(ta); save(); validate(); });
+      const ta = $("ta" + (side === "reves" ? "Reves" : "Drive"));
+      ta.addEventListener("input", () => { syncHeight(ta); validate(); });
+      ta.addEventListener("keydown", (e) => {
+        if (e.key === "Enter"){
+          // bloquear Enter si ya hay suficientes jugadores
+          const filled = getNormed(side).filter(Boolean).length;
+          if (filled >= state.pairs){ e.preventDefault(); }
+        }
+      });
+      ta.addEventListener("paste", (e) => {
+        // dejar que el browser pegue, luego limpiar líneas extra
+        setTimeout(() => { syncHeight(ta); validate(); }, 0);
+      });
     });
   }
-
-  /* ---- limpiar e intercambiar ---- */
-  const clearBtn = $("clearBtn"), swapBtn = $("swapBtn");
-  let clearArmed = null;
-  function resetClear(){
-    clearTimeout(clearArmed); clearArmed = null;
-    clearBtn.classList.remove("is-armed");
-    clearBtn.textContent = "Borrar lista";
-  }
-  clearBtn.addEventListener("click", () => {
-    if (!taEl[state.tab].value.trim()) return;
-    if (!clearArmed){
-      clearBtn.classList.add("is-armed");
-      clearBtn.textContent = `Tocá de nuevo para borrar ${SIDE_LABEL[state.tab]}`;
-      clearArmed = setTimeout(resetClear, 3000);
-      return;
-    }
-    taEl[state.tab].value = "";
-    resetClear(); syncHeight(taEl[state.tab]); save(); validate();
-    showToast(`Lista de ${SIDE_LABEL[state.tab]} borrada`);
-  });
-  swapBtn.addEventListener("click", () => {
-    [taEl.reves.value, taEl.drive.value] = [taEl.drive.value, taEl.reves.value];
-    syncHeight(taEl.reves); syncHeight(taEl.drive); save(); validate();
-    showToast("Listas intercambiadas");
-  });
 
   /* ---- validation ---- */
   function validate(){
     reqN.textContent = reqN2.textContent = state.pairs;
-    [...segWrap.children].forEach(c => c.setAttribute("aria-pressed", c.dataset.n == state.pairs ? "true":"false"));
-    const a = analyze();
-    lastAnalysis = a;
     ["reves","drive"].forEach(side => {
-      const s = a.sides[side];
-      renderNums(side, a);
-      const bad = s.dupes.size || s.extra || Object.keys(s.count).some(k => a.both.has(k));
-      countEl[side].textContent = `${s.names.length}/${a.req}`;
-      countEl[side].className = "tab-count " + (bad ? "is-bad" : s.ok ? "is-ok" : "");
+      const lines = getNormed(side);
+      const filled = lines.slice(0, state.pairs).filter(Boolean).length;
+      const dupIdx = renderNums(side);
+      sideMeta[side] = { filled, dup: dupIdx.size > 0 };
+      const el = side === "reves" ? countReves : countDrive;
+      const ok = filled === state.pairs && dupIdx.size === 0;
+      el.textContent = `${filled}/${state.pairs}`;
+      el.className = "tab-count " + (dupIdx.size ? "is-bad" : ok ? "is-ok" : "");
     });
-    sortearBtn.disabled = !a.ready;
-    const lines = a.errors.map(t => `<span class="err__line">${t}</span>`);
-    if (!a.errors.length && a.missing.length && (a.sides.reves.names.length || a.sides.drive.names.length)){
-      lines.push(`<span class="err__line err__line--soft">Faltan nombres: ${a.missing.join(" y ")}.</span>`);
-    }
-    errMsg.innerHTML = lines.join("");
-    return a;
+    const ready = sideMeta.reves.filled === state.pairs && !sideMeta.reves.dup
+               && sideMeta.drive.filled === state.pairs && !sideMeta.drive.dup;
+    sortearBtn.disabled = !ready;
+    if (ready) errMsg.textContent = "";
   }
 
   /* ---- sorteo ---- */
   sortearBtn.addEventListener("click", iniciarSorteo);
 
-  // Mezcla buscando que no se repita ninguna pareja del sorteo anterior
-  function armarParejas(reves, drive){
-    const prev = new Set((lastResult || []).map(p => keyOf(p.reves) + "|" + keyOf(p.drive)));
-    let best = null, bestScore = Infinity;
-    for (let t = 0; t < 300; t++){
-      const r = shuffle(reves.slice()), d = shuffle(drive.slice());
-      const score = r.reduce((acc, x, i) => acc + (prev.has(keyOf(x) + "|" + keyOf(d[i])) ? 1 : 0), 0);
-      if (score < bestScore){ best = { r, d }; bestScore = score; if (score === 0) break; }
-    }
-    return best.r.map((x,i) => ({ no:i+1, reves:x, drive:best.d[i] }));
-  }
-
-  function setBusy(on){
-    sortearBtn.disabled = on || !(lastAnalysis && lastAnalysis.ready);
-    ctaText.textContent = on ? "Sorteando…" : "Sortear parejas";
-    ctaBall.classList.toggle("spin", on);
-  }
-
   async function iniciarSorteo(){
-    const a = validate();
-    if (!a.ready) return;
-    const id = ++drawId;
-    const reves = a.sides.reves.names.slice(), drive = a.sides.drive.names.slice();
+    const req = state.pairs;
+    const reves = getNormed("reves").filter(Boolean).slice(0, req);
+    const drive = getNormed("drive").filter(Boolean).slice(0, req);
+    if (reves.length < req || drive.length < req || sideMeta.reves.dup || sideMeta.drive.dup){
+      errMsg.textContent = `Completá los ${req} nombres de cada lado, sin repetidos.`;
+      return;
+    }
+    errMsg.textContent = "";
     openOverlay("Sorteando…");
-    setBusy(true);
+    sortearBtn.disabled = true; ctaText.textContent = "Sorteando…"; ctaBall.parentElement.classList.add("spin");
 
     if (!REDUCED) await runAnimation();
-    if (id !== drawId) return;   // se cerró la ventana durante la cuenta
 
-    lastResult = armarParejas(reves, drive);
+    const r = shuffle(reves.slice()), d = shuffle(drive.slice());
+    lastResult = r.map((x,i) => ({ no:i+1, reves:x, drive:d[i] }));
+
     renderResults(lastResult);
     boardTitle.textContent = "Parejas sorteadas";
     if (!REDUCED) confetti();
-    setBusy(false);
+
+    ctaBall.parentElement.classList.remove("spin");
+    ctaText.textContent = "Sortear parejas"; sortearBtn.disabled = false;
   }
 
   function runAnimation(){
@@ -626,41 +490,22 @@ document.addEventListener("DOMContentLoaded", () => {
       n--;
       if (n >= 1){ cd.textContent = n; cd.style.animation="none"; void cd.offsetWidth; cd.style.animation=""; }
       else { cd.textContent = "¡Ya!"; clearInterval(tick); }
-    }, 800);
-    return new Promise(res => setTimeout(res, 3200));
-  }
-
-  // Parejas de a dos por cancha; con cantidad impar, la última espera
-  function canchas(pairs){
-    const out = [];
-    for (let i = 0; i < pairs.length; i += 2) out.push(pairs.slice(i, i+2));
-    return out;
-  }
-
-  function pairRow(p, i){
-    return `<article class="pair" style="animation-delay:${i*40}ms">
-        <span class="pair__no">${pad2(p.no)}</span>
-        <span class="pair__line">
-          <span class="pair__p pair__rv"><span class="pair__tag">Revés</span><span class="pair__name">${esc(p.reves)}</span></span>
-          <span class="pair__p pair__dr"><span class="pair__tag">Drive</span><span class="pair__name">${esc(p.drive)}</span></span>
-        </span>
-      </article>`;
+    }, 850);
+    return new Promise(res => setTimeout(res, 2700));
   }
 
   function renderResults(pairs){
     const testFile = new File([""], "test.png", { type:"image/png" });
     const canShareImg = !!(navigator.canShare && navigator.canShare({ files:[testFile] }));
 
-    boardBody.innerHTML = `<div class="courts">
-      ${canchas(pairs).map((c, ci) => c.length === 2
-        ? `<section class="court">
-            <h3 class="court__head">Cancha ${ci+1}</h3>
-            <div class="pairs">${pairRow(c[0], ci*2)}<div class="vs" aria-label="contra">vs</div>${pairRow(c[1], ci*2+1)}</div>
-          </section>`
-        : `<section class="court court--bye">
-            <h3 class="court__head">Espera turno</h3>
-            <div class="pairs">${pairRow(c[0], ci*2)}</div>
-          </section>`).join("")}
+    boardBody.innerHTML = `<div class="pairs">
+      ${pairs.map((p,i) => `
+      <article class="pair" style="animation-delay:${i*40}ms">
+        <span class="pair__no">${String(p.no).padStart(2,"0")}</span>
+        <span class="pair__line">
+          <span class="pair__rv">${esc(p.reves)}</span><span class="pair__sep">/</span><span class="pair__dr">${esc(p.drive)}</span>
+        </span>
+      </article>`).join("")}
     </div>
       <div class="actions">
         <button class="btn" id="copyBtn">
@@ -682,178 +527,186 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
       </div>`;
     $("copyBtn").addEventListener("click", copyResults);
-    if (canShareImg){ $("shareBtn").addEventListener("click", shareImage); prepareShareFile(); }
+    if (canShareImg) $("shareBtn").addEventListener("click", shareImage);
     else $("pngBtn").addEventListener("click", exportPNG);
-    $("reBtn").addEventListener("click", iniciarSorteo);
+    $("reBtn").addEventListener("click", () => { closeOverlay(); setTimeout(iniciarSorteo, 120); });
   }
 
   /* ---- copy ---- */
-  function resultText(){
-    const lines = ["Sorteo de parejas de pádel", new Date().toLocaleDateString("es-AR",{day:"2-digit",month:"long",year:"numeric"}), ""];
-    canchas(lastResult).forEach((c, ci) => {
-      lines.push(c.length === 2 ? `Cancha ${ci+1}` : "Espera turno");
-      c.forEach(p => lines.push(`  Pareja ${p.no}: ${p.reves} (revés) / ${p.drive} (drive)`));
-      lines.push("");
-    });
-    return lines.join("\n").trim();
-  }
-  function copyFallback(text){
-    const ta = document.createElement("textarea");
-    ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
-    overlay.appendChild(ta); ta.select();
-    let ok = false;
-    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
-    ta.remove();
-    return ok;
-  }
-  async function copyResults(){
+  function copyResults(){
     if (!lastResult) return;
-    const text = resultText();
-    try {
-      if (!navigator.clipboard) throw new Error("sin portapapeles");
-      await navigator.clipboard.writeText(text);
-      showToast("Copiado al portapapeles");
-    } catch (e) {
-      showToast(copyFallback(text) ? "Copiado al portapapeles" : "No se pudo copiar");
-    }
+    const lines = ["Sorteo de parejas de pádel", ""];
+    lastResult.forEach(p => lines.push(`Pareja ${p.no}:  ${p.reves} (revés)  ×  ${p.drive} (drive)`));
+    navigator.clipboard?.writeText(lines.join("\n"))
+      .then(() => showToast("Copiado al portapapeles"))
+      .catch(() => showToast("No se pudo copiar"));
   }
 
   /* ---- canvas compartido ---- */
   function buildCanvas(){
-    const S = 2, W = 1080, pad = 60, rowH = 70, headH = 210, footH = 80, courtHead = 46, vsH = 26, courtGap = 26;
-    const groups = canchas(lastResult);
-    const groupH = (g) => courtHead + g.length * rowH + (g.length === 2 ? vsH : 0);
-    const H = headH + groups.reduce((acc, g) => acc + groupH(g) + courtGap, 0) - courtGap + footH;
+    const S = 2, W = 1080, pad = 60, rowH = 70, headH = 210, footH = 80;
+    const H = headH + lastResult.length * rowH + footH;
     const cv = document.createElement("canvas");
     cv.width = W*S; cv.height = H*S;
     const c = cv.getContext("2d"); c.scale(S,S);
 
     const col = {
       bg1:"#1A52A8", bg2:"#0D2454",
-      muted:"rgba(255,255,255,0.70)", text:"#FFFFFF",
-      ball:"#C8E600", reves:"#4ADE80", drive:"#FBBF24",
-      rowOdd:"rgba(255,255,255,0.05)", rowEven:"rgba(255,255,255,0.09)",
+      muted:"rgba(255,255,255,0.50)", text:"#FFFFFF",
+      ball:"#C8E600", reves:"#22C55E", drive:"#F0A500",
+      rowOdd:"rgba(255,255,255,0.04)", rowEven:"rgba(255,255,255,0.09)",
       divider:"rgba(255,255,255,0.12)", border:"rgba(255,255,255,0.28)"
     };
-    const box = (x, y, w, h, r) => { c.beginPath(); if (c.roundRect) c.roundRect(x, y, w, h, r); else c.rect(x, y, w, h); };
 
-    // fondo, igual que la web
+    // fondo — gradiente igual que la web
     const bg = c.createLinearGradient(0,0,0,H);
     bg.addColorStop(0, col.bg1); bg.addColorStop(1, col.bg2);
     c.fillStyle = bg; c.fillRect(0,0,W,H);
+    // destello superior sutil
     const glow = c.createRadialGradient(W/2,0,0,W/2,0,W*0.75);
     glow.addColorStop(0,"rgba(255,255,255,0.07)"); glow.addColorStop(1,"rgba(255,255,255,0)");
     c.fillStyle = glow; c.fillRect(0,0,W,H);
+
+    // borde exterior (como la web)
+    const rr = 20;
     c.strokeStyle = "rgba(255,255,255,0.70)"; c.lineWidth = 3;
-    box(4,4,W-8,H-8,20); c.stroke();
+    c.beginPath();
+    if (c.roundRect) c.roundRect(4,4,W-8,H-8,rr);
+    else c.rect(4,4,W-8,H-8);
+    c.stroke();
 
     // header
-    c.textBaseline = "alphabetic"; c.textAlign = "left";
+    c.textBaseline = "alphabetic";
     c.fillStyle = col.text; c.font = "600 18px 'Chakra Petch', monospace";
     c.fillText("● PÁDEL", pad, 72);
-    c.font = "700 52px 'Chakra Petch', sans-serif";
+    c.fillStyle = col.text; c.font = "700 52px 'Chakra Petch', sans-serif";
     c.fillText("Sorteo de parejas", pad, 136);
     const d = new Date();
     c.fillStyle = col.muted; c.font = "400 20px 'Sora', sans-serif";
     c.fillText(d.toLocaleDateString("es-AR",{day:"2-digit",month:"long",year:"numeric"}), pad, 170);
-    // leyenda de colores con texto, no solo color
-    c.font = "700 18px 'Chakra Petch', monospace"; c.textAlign = "right";
-    c.fillStyle = col.drive; c.fillText("● DRIVE", W - pad, 170);
-    const dw = c.measureText("● DRIVE").width;
-    c.fillStyle = col.reves; c.fillText("● REVÉS", W - pad - dw - 24, 170);
-    c.textAlign = "left";
+
+    // línea divisoria bajo header
     c.strokeStyle = col.divider; c.lineWidth = 1;
     c.beginPath(); c.moveTo(pad, headH-10); c.lineTo(W-pad, headH-10); c.stroke();
 
+    // filas
     const noW = 70, textX = pad + noW + 16;
     const maxTxt = W - textX - pad - 20;
-    const clip = (txt, max, font) => {
+
+    const measureAndClip = (txt, max, font) => {
       c.font = font;
       if (c.measureText(txt).width <= max) return txt;
       while (txt.length > 1 && c.measureText(txt + "…").width > max) txt = txt.slice(0,-1);
       return txt + "…";
     };
-    const nameFont = "600 26px 'Sora', sans-serif", sepFont = "400 26px 'Sora', sans-serif", sepTxt = " / ";
 
-    const drawRow = (p, ry, idx) => {
+    // clip redondeado para que los fondos de fila no se salgan del borde
+    const tr2 = 12;
+    c.save();
+    c.beginPath();
+    if (c.roundRect) c.roundRect(pad, headH, W - pad*2, lastResult.length * rowH, tr2);
+    else c.rect(pad, headH, W - pad*2, lastResult.length * rowH);
+    c.clip();
+
+    lastResult.forEach((p, idx) => {
+      const ry = headH + idx * rowH;
+
+      // fondo alternado — full width dentro del borde
       c.fillStyle = idx % 2 === 0 ? col.rowOdd : col.rowEven;
       c.fillRect(pad, ry, W - pad*2, rowH);
-      const cy = ry + rowH/2 + 9;
-      c.fillStyle = col.muted; c.font = "700 22px 'Chakra Petch', monospace";
-      c.fillText(pad2(p.no), pad+14, cy);
-      c.font = sepFont; const sepW = c.measureText(sepTxt).width;
-      const half = (maxTxt - sepW) / 2;
-      const rv = clip(p.reves, half, nameFont), dr = clip(p.drive, half, nameFont);
-      c.font = nameFont; c.fillStyle = col.reves; c.fillText(rv, textX, cy);
-      const rvW = c.measureText(rv).width;
-      c.font = sepFont; c.fillStyle = "rgba(255,255,255,0.45)"; c.fillText(sepTxt, textX + rvW, cy);
-      c.font = nameFont; c.fillStyle = col.drive; c.fillText(dr, textX + rvW + sepW, cy);
-    };
 
-    let y = headH;
-    groups.forEach((g, gi) => {
-      c.fillStyle = col.ball; c.font = "700 20px 'Chakra Petch', monospace";
-      c.fillText(g.length === 2 ? `CANCHA ${gi+1}` : "ESPERA TURNO", pad, y + 30);
-      const top = y + courtHead, h = groupH(g) - courtHead;
-      c.save(); box(pad, top, W - pad*2, h, 12); c.clip();
-      drawRow(g[0], top, 0);
-      if (g.length === 2){
-        const vy = top + rowH;
-        c.fillStyle = "rgba(0,0,0,0.18)"; c.fillRect(pad, vy, W - pad*2, vsH);
-        c.fillStyle = col.muted; c.font = "700 15px 'Chakra Petch', monospace"; c.textAlign = "center";
-        c.fillText("VS", W/2, vy + vsH/2 + 5); c.textAlign = "left";
-        drawRow(g[1], vy + vsH, 1);
+      // borde inferior
+      if (idx < lastResult.length - 1){
+        c.strokeStyle = col.divider; c.lineWidth = 1;
+        c.beginPath(); c.moveTo(pad, ry+rowH); c.lineTo(W-pad, ry+rowH); c.stroke();
       }
-      c.restore();
-      c.strokeStyle = col.border; c.lineWidth = 1.5;
-      box(pad, top, W - pad*2, h, 12); c.stroke();
-      y += groupH(g) + courtGap;
+
+      const cy = ry + rowH/2 + 9; // baseline centrada verticalmente
+
+      // número
+      c.textAlign = "left"; c.fillStyle = col.muted;
+      c.font = "700 22px 'Chakra Petch', monospace";
+      c.fillText(String(p.no).padStart(2,"0"), pad+12, cy);
+
+      // medir el texto completo para hacer clip inteligente
+      const sepTxt = " / ";
+      const nameFont = "600 26px 'Sora', sans-serif";
+      const sepFont  = "400 26px 'Sora', sans-serif";
+
+      c.font = nameFont;
+      const rvFull = p.reves;
+      c.font = sepFont;
+      const sepW = c.measureText(sepTxt).width;
+      c.font = nameFont;
+      const drFull = p.drive;
+
+      // cada nombre tiene hasta la mitad del espacio disponible menos el sep
+      const halfMax = (maxTxt - sepW) / 2;
+      const rvText = measureAndClip(rvFull, halfMax, nameFont);
+      const drText = measureAndClip(drFull, halfMax, nameFont);
+
+      // dibujar Revés
+      c.font = nameFont; c.fillStyle = col.reves; c.textAlign = "left";
+      c.fillText(rvText, textX, cy);
+      const rvW = c.measureText(rvText).width;
+
+      // separador
+      c.font = sepFont; c.fillStyle = "rgba(255,255,255,0.35)";
+      c.fillText(sepTxt, textX + rvW, cy);
+
+      // Drive
+      c.font = nameFont; c.fillStyle = col.drive;
+      c.fillText(drText, textX + rvW + sepW, cy);
     });
 
-    c.fillStyle = col.muted; c.font = "400 16px 'Chakra Petch', monospace";
+    c.restore(); // fin del clip redondeado
+
+    // borde exterior de la tabla de filas con esquinas redondeadas
+    const tr = 12;
+    c.strokeStyle = col.border; c.lineWidth = 1.5;
+    c.beginPath();
+    if (c.roundRect) c.roundRect(pad, headH, W - pad*2, lastResult.length * rowH, tr);
+    else c.rect(pad, headH, W - pad*2, lastResult.length * rowH);
+    c.stroke();
+    // enmascarar esquinas de las filas con clip redondeado
+    // (ya pintadas antes del stroke, el borde las cubre limpiamente)
+
+    // footer
+    c.textAlign = "left"; c.fillStyle = col.muted;
+    c.font = "400 16px 'Chakra Petch', monospace";
     c.fillText("Sorteo de parejas de pádel", pad, H - 30);
+
     return { cv, date: d };
   }
 
   /* ---- export PNG ---- */
-  async function exportPNG(){
+  function exportPNG(){
     if (!lastResult) return;
-    await document.fonts.ready;
     const { cv, date } = buildCanvas();
     const a = document.createElement("a");
     a.href = cv.toDataURL("image/png");
-    a.download = `parejas-padel-${localDate(date)}.png`;
+    a.download = `parejas-padel-${date.toISOString().slice(0,10)}.png`;
     a.click();
     showToast("Imagen descargada");
   }
 
   /* ---- share image (Web Share API) ---- */
-  // La imagen se arma apenas aparece el resultado, así al tocar Compartir
-  // se llama a navigator.share en el mismo toque (Safari lo exige).
-  async function prepareShareFile(){
-    shareFile = null;
-    const forResult = lastResult;
-    await document.fonts.ready;
-    if (forResult !== lastResult) return;
-    const { cv, date } = buildCanvas();
-    cv.toBlob((blob) => {
-      if (!blob || forResult !== lastResult) return;
-      shareFile = new File([blob], `parejas-padel-${localDate(date)}.png`, { type:"image/png" });
-    }, "image/png");
-  }
   async function shareImage(){
     if (!lastResult) return;
-    if (!shareFile){ showToast("Preparando la imagen, tocá de nuevo"); return; }
-    try {
-      await navigator.share({ files:[shareFile], title:"Sorteo de parejas de pádel" });
-    } catch (e) {
-      if (e.name !== "AbortError") showToast("No se pudo compartir");
-    }
+    const { cv, date } = buildCanvas();
+    cv.toBlob(async (blob) => {
+      const file = new File([blob], `parejas-padel-${date.toISOString().slice(0,10)}.png`, { type:"image/png" });
+      try {
+        await navigator.share({ files:[file], title:"Sorteo de parejas de pádel" });
+      } catch (e) {
+        if (e.name !== "AbortError") showToast("No se pudo compartir");
+      }
+    }, "image/png");
   }
 
   /* ---- confetti ---- */
   function confetti(){
-    const colors = ["#C8E600","#4ADE80","#FBBF24","#FFFFFF","#A8C4EE"];
+    const colors = ["#C8E600","#22C55E","#F0A500","#FFFFFF","#A8C4EE"];
     const frag = document.createDocumentFragment();
     for (let i=0;i<60;i++){
       const el = document.createElement("div");
@@ -871,30 +724,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---- overlay ---- */
-  const mainEl = document.querySelector("main");
-  let lastFocus = null;
-  function openOverlay(title){
-    boardTitle.textContent = title;
-    if (!overlay.classList.contains("open")) lastFocus = document.activeElement;
-    overlay.classList.add("open"); document.body.style.overflow="hidden";
-    mainEl.inert = true;
-    closeBtn.focus();
-  }
-  function closeOverlay(){
-    drawId++;   // cancela un sorteo que todavía esté en la cuenta regresiva
-    overlay.classList.remove("open"); document.body.style.overflow=""; boardBody.innerHTML=""; confettiBox.innerHTML="";
-    mainEl.inert = false;
-    setBusy(false);
-    if (lastFocus && document.contains(lastFocus) && !lastFocus.disabled) lastFocus.focus();
-  }
-  overlay.addEventListener("keydown", (e) => {
-    if (e.key !== "Tab") return;
-    const f = [...overlay.querySelectorAll("button:not([disabled])")];
-    if (!f.length) return;
-    const first = f[0], last = f[f.length-1];
-    if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
-  });
+  function openOverlay(title){ boardTitle.textContent = title; overlay.classList.add("open"); document.body.style.overflow="hidden"; }
+  function closeOverlay(){ overlay.classList.remove("open"); document.body.style.overflow=""; boardBody.innerHTML=""; confettiBox.innerHTML=""; }
   closeBtn.addEventListener("click", closeOverlay);
   overlay.addEventListener("click", (e) => { if (e.target === overlay) closeOverlay(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && overlay.classList.contains("open")) closeOverlay(); });
@@ -904,11 +735,8 @@ document.addEventListener("DOMContentLoaded", () => {
     clearTimeout(toastT); toastT = setTimeout(() => toast.classList.remove("show"), 1900); }
 
   /* ---- init ---- */
-  loadSaved();
-  renderSegments();
   initTabs();
   initTextareas();
-  syncHeight(taEl.reves); syncHeight(taEl.drive);
   validate();
 });
 </script>
